@@ -1,0 +1,6 @@
+{
+  "name": "@feelso/echo",
+  "version": "0.1.0",
+  "description": "OS notifications for AI coding assistants",
+  "hooks": "../hooks/hooks.json"
+}
