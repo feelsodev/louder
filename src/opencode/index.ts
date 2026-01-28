@@ -70,7 +70,7 @@ export async function createOpenCodePlugin(ctx: OpenCodePluginInput): Promise<Op
   const config = await loadConfig(ctx.directory)
 
   const notifierConfig = {
-    title: config.title ?? "Echo",
+    title: config.title ?? "Louder",
     message: config.message ?? "OpenCode is ready",
     subtitle: config.subtitle,
     open: config.open,

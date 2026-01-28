@@ -27,7 +27,7 @@ const DEFAULT_CONFIG: Required<Omit<NotifierConfig, "soundPath" | "subtitle" | "
   subtitle?: string
   open?: string
 } = {
-  title: "Echo",
+  title: "Louder",
   message: "Task completed",
   subtitle: undefined,
   open: undefined,

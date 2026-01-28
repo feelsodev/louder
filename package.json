@@ -1,5 +1,5 @@
 {
-  "name": "@feelso/echo",
+  "name": "@feelso/louder",
   "version": "0.1.0",
   "description": "AI coding assistant notification plugin for Claude Code and OpenCode",
   "type": "module",
@@ -21,7 +21,7 @@
     }
   },
   "bin": {
-    "echo-claude-hook": "./dist/bin/claude-hook.js"
+    "louder-claude-hook": "./dist/bin/claude-hook.js"
   },
   "files": [
     "dist",
@@ -48,12 +48,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/feelsodev/echo.git"
+    "url": "https://github.com/feelsodev/louder.git"
   },
   "bugs": {
-    "url": "https://github.com/feelsodev/echo/issues"
+    "url": "https://github.com/feelsodev/louder/issues"
   },
-  "homepage": "https://github.com/feelsodev/echo#readme",
+  "homepage": "https://github.com/feelsodev/louder#readme",
   "devDependencies": {
     "@types/node": "^22.0.0",
     "tsup": "^8.0.0",

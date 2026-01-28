@@ -33,7 +33,7 @@ export async function handleClaudeHook(input: ClaudeHookInput): Promise<void> {
   )
 
   const notifierConfig = {
-    title: config.title ?? "Echo",
+    title: config.title ?? "Louder",
     message: config.message ?? "Claude Code is ready",
     subtitle: config.subtitle,
     open: config.open,
@@ -54,7 +54,7 @@ export function createClaudeHooksJson(): object {
           hooks: [
             {
               type: "command",
-              command: "npx @feelso/echo-claude-hook",
+              command: "npx @feelso/louder",
               timeout: 5000,
             },
           ],
@@ -66,7 +66,7 @@ export function createClaudeHooksJson(): object {
           hooks: [
             {
               type: "command",
-              command: "npx @feelso/echo-claude-hook",
+              command: "npx @feelso/louder",
               timeout: 5000,
             },
           ],

@@ -40,17 +40,17 @@ export type EchoConfig = z.infer<typeof EchoConfigSchema>
 export type SoundTypeValue = z.infer<typeof SoundTypeSchema>
 export type EventConfig = z.infer<typeof EventConfigSchema>
 
-const explorer = cosmiconfig("echo", {
+const explorer = cosmiconfig("louder", {
   searchPlaces: [
     "package.json",
-    ".echorc",
-    ".echorc.json",
-    ".echorc.yaml",
-    ".echorc.yml",
-    ".echorc.js",
-    ".echorc.cjs",
-    "echo.config.js",
-    "echo.config.cjs",
+    ".louderrc",
+    ".louderrc.json",
+    ".louderrc.yaml",
+    ".louderrc.yml",
+    ".louderrc.js",
+    ".louderrc.cjs",
+    "louder.config.js",
+    "louder.config.cjs",
   ],
 })
 
@@ -66,7 +66,7 @@ export async function loadConfig(searchFrom?: string): Promise<EchoConfig> {
 
     const parsed = EchoConfigSchema.safeParse(result.config)
     if (!parsed.success) {
-      console.error("[echo] Invalid config:", parsed.error.message)
+      console.error("[louder] Invalid config:", parsed.error.message)
       return {}
     }
 
