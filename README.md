@@ -1,38 +1,89 @@
-# @feelso/echo
+<div align="center">
 
-<p align="center">
-  <strong>AI 코딩 어시스턴트를 위한 OS 알림 플러그인</strong>
-</p>
+# 🔔 @feelso/louder
 
-<p align="center">
-  Claude Code나 OpenCode가 작업을 완료하면 알림을 받으세요.
-</p>
+[![npm version](https://img.shields.io/npm/v/@feelso/louder.svg)](https://www.npmjs.com/package/@feelso/louder)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![macOS only](https://img.shields.io/badge/platform-macOS-lightgrey.svg)](https://www.apple.com/macos/)
 
----
+**Smart notification system for AI coding assistants**
 
-## Features
+Get notified with sound when Claude Code or OpenCode finishes a task.
 
-- **Contextual Sounds** - 이벤트 타입별 다른 사운드 (success, error, warning, info, progress, reminder)
-- **Multiple Notification Types** - Task Complete, Error, Progress 등 사전 정의된 알림 타입
-- **Interactive Notifications** - 클릭 시 URL 열기 (macOS)
-- **Cross-Platform** - macOS, Linux, Windows 지원
-- **Highly Configurable** - 이벤트별 사운드, 커스텀 메시지, 딜레이 등 세부 설정
+[Installation](#-installation-guide-for-humans) · [Quick Start](#-quick-start) · [API Docs](#-programmatic-api)
+
+</div>
 
 ---
 
-## Installation
+## 🤔 Why Louder?
 
-```bash
-npm install @feelso/echo
+Ever had this experience with AI coding tools?
+
+```
+You tell Claude Code "fix this bug" and then...
+→ Watch YouTube
+→ Grab coffee
+→ Check Slack
+→ 30 minutes later: "Oh? It finished already?" 😅
 ```
 
+**Louder solves this problem.**
+
+- ✅ **Instant notification** when tasks complete (macOS system notifications)
+- 🔊 **Different sounds** for different situations (success, error, warning, etc.)
+- 🖱️ **Clickable notifications** to open results (URLs, files)
+- ⚙️ **Fully customizable**
+
+Now you can do other things while AI works. It'll let you know when it's done.
+
 ---
 
-## Quick Start
+## ✨ Key Features
 
-### Claude Code
+- 🎵 **Context-aware sounds** - 8 different sounds for success, error, warning, progress, etc.
+- 📬 **Multiple notification types** - Predefined types like Task Complete, Error, Progress
+- 🖱️ **Clickable notifications** - Click to open URLs, files, logs, etc.
+- 🍎 **macOS native** - Perfect integration with system notifications and sounds
+- ⚙️ **Fine-grained control** - Configure sound, message, delay separately per event
 
-`~/.claude/settings.json`에 추가:
+---
+
+## 📦 Installation
+
+### 💁 Installation Guide for Humans
+
+**Step 1: Install the package**
+
+Open your terminal and run:
+
+```bash
+npm install -g @feelso/louder
+```
+
+> 💡 The `-g` flag installs globally so you can use it anywhere.
+
+**Step 2: Configure your AI tool**
+
+Modify the configuration file for your AI coding tool.
+
+#### Claude Code Users
+
+Open the settings file in your terminal:
+
+```bash
+# Create the file if it doesn't exist
+mkdir -p ~/.claude
+touch ~/.claude/settings.json
+
+# Open with editor (VS Code example)
+code ~/.claude/settings.json
+
+# Or open with nano
+nano ~/.claude/settings.json
+```
+
+**Copy and paste** the following content:
 
 ```json
 {
@@ -42,7 +93,7 @@ npm install @feelso/echo
         "hooks": [
           {
             "type": "command",
-            "command": "npx @feelso/echo-claude-hook",
+            "command": "npx @feelso/louder",
             "timeout": 5000
           }
         ]
@@ -54,7 +105,7 @@ npm install @feelso/echo
         "hooks": [
           {
             "type": "command",
-            "command": "npx @feelso/echo-claude-hook",
+            "command": "npx @feelso/louder",
             "timeout": 5000
           }
         ]
@@ -64,25 +115,183 @@ npm install @feelso/echo
 }
 ```
 
-### OpenCode
+> ⚠️ **Warning**: If your `settings.json` already has other settings, only add the `"hooks"` section to the existing content.
 
-`opencode.json`에 추가:
+#### OpenCode Users
+
+Create an `opencode.json` file in your project root:
+
+```bash
+# Navigate to your project folder first
+touch opencode.json
+```
+
+Add the following content:
 
 ```json
 {
-  "plugin": ["@feelso/echo"]
+  "plugin": ["@feelso/louder"]
 }
+```
+
+**Step 3: Test it**
+
+Give Claude Code or OpenCode a simple task. If you hear a sound and see a notification when it finishes, you're all set! 🎉
+
+#### Troubleshooting
+
+<details>
+<summary>❌ No notifications appearing?</summary>
+
+1. Check macOS System Settings > Notifications to ensure Terminal/iTerm notifications are allowed
+2. Verify the `~/.claude/settings.json` file path is correct
+3. Check for JSON syntax errors (commas, braces, etc.)
+4. Restart Claude Code and try again
+
+</details>
+
+<details>
+<summary>🔇 No sound playing?</summary>
+
+1. Check that macOS system sounds are enabled
+2. Verify `.louderrc.json` doesn't have `"sound": false`
+3. Check volume settings
+
+</details>
+
+<details>
+<summary>💻 Does it work on other platforms (Windows, Linux)?</summary>
+
+Unfortunately, it's currently **macOS only**. We use macOS native notification system (`osascript`) and sound playback (`afplay`).
+
+</details>
+
+---
+
+### 🤖 Installation Guide for AI Assistants
+
+> **Claude Code, Cursor AI, and other AI assistants can read this section and install it themselves.**
+
+**Installation Protocol**:
+
+1. **Install package**: Global or project-local installation
+
+```bash
+npm install -g @feelso/louder
+# Or project-local
+npm install --save-dev @feelso/louder
+```
+
+2. **Configure Claude Code hooks**: Add hooks to `~/.claude/settings.json`
+
+**Important**: If the file already exists, merge only the `hooks` section while preserving existing content.
+
+Complete example (`~/.claude/settings.json`):
+
+```json
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx @feelso/louder",
+            "timeout": 5000
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npx @feelso/louder",
+            "timeout": 5000
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+3. **Configure OpenCode plugin**: Add to `opencode.json` in project root
+
+```json
+{
+  "plugin": ["@feelso/louder"]
+}
+```
+
+**File locations**:
+- **Claude Code settings**: `~/.claude/settings.json` (`.claude` folder in user home directory)
+- **OpenCode settings**: `opencode.json` in project root
+- **Louder config (optional)**: `.louderrc.json` in project root or `~/.louderrc.json`
+
+**Verification steps**:
+
+```bash
+# 1. Check settings file exists
+ls -la ~/.claude/settings.json
+
+# 2. Validate JSON syntax
+cat ~/.claude/settings.json | jq .
+
+# 3. Check npx is available
+which npx
+
+# 4. Verify package installation
+npm list -g @feelso/louder
+```
+
+After installation, tell the user: "Installation complete. You'll receive notifications when the next task finishes."
+
+---
+
+## 🚀 Quick Start
+
+Just install and you're ready to go! The default settings work great, but check the configuration section below if you want to customize.
+
+**Default behavior**:
+- ✅ Claude Code task complete → 🔊 success sound + notification
+- ⚠️ Error occurs → 🔊 error sound + notification
+- 📢 User input needed → 🔊 info sound + notification
+
+**Try it now**:
+
+```bash
+# In Claude Code
+"Read this README file"
+
+# When it finishes... Ding! 🔔 You get a notification
 ```
 
 ---
 
-## Configuration
+## ⚙️ Configuration (Optional)
 
-프로젝트 루트 또는 홈 디렉토리에 `.echorc.json` 생성:
+If you don't like the defaults, you can customize with a `.louderrc.json` file.
+
+**Create configuration file**:
+
+Create `.louderrc.json` in your project root or home directory (`~`):
+
+```bash
+# Project-specific config
+touch .louderrc.json
+
+# Or global config (applies to all projects)
+touch ~/.louderrc.json
+```
+
+**Complete configuration example** (copy and modify):
 
 ```json
 {
-  "title": "Echo",
+  "title": "Louder",
   "message": "Task completed",
   "subtitle": "Click to view",
   "open": "https://github.com",
@@ -98,189 +307,79 @@ npm install @feelso/echo
 }
 ```
 
-### 설정 옵션
+### 📋 Configuration Options
 
-| 옵션 | 타입 | 기본값 | 설명 |
-|------|------|--------|------|
-| `title` | string | "Echo" | 알림 제목 |
-| `message` | string | "Task completed" | 알림 메시지 |
-| `subtitle` | string | - | 알림 부제목 |
-| `open` | string | - | 클릭 시 열 URL (macOS 전용) |
-| `sound` | boolean \| SoundType | true | 사운드 재생 여부 또는 사운드 타입 |
-| `soundPath` | string | 시스템 기본값 | 커스텀 사운드 파일 경로 |
-| `delay` | number | 1500 | 알림 전 딜레이 (ms) |
-| `events` | object | - | 이벤트별 설정 |
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `title` | string | "Louder" | Notification title |
+| `message` | string | "Task completed" | Notification message |
+| `subtitle` | string | - | Notification subtitle |
+| `open` | string | - | URL to open on click (macOS only) |
+| `sound` | boolean \| SoundType | true | Enable sound or specify sound type |
+| `soundPath` | string | System default | Custom sound file path |
+| `delay` | number | 1500 | Delay before notification (ms) |
+| `events` | object | - | Event-specific settings |
 
-### 지원 설정 파일 형식
+### 📁 Supported Configuration Formats
 
-[cosmiconfig](https://github.com/davidtheclark/cosmiconfig)을 통해 다양한 형식 지원:
+Don't like JSON? You can use YAML or JavaScript too:
 
-- `.echorc`
-- `.echorc.json`
-- `.echorc.yaml` / `.echorc.yml`
-- `.echorc.js` / `.echorc.cjs`
-- `echo.config.js` / `echo.config.cjs`
-- `package.json`의 `"echo"` 키
+```
+✅ .louderrc
+✅ .louderrc.json
+✅ .louderrc.yaml / .louderrc.yml
+✅ .louderrc.js / .louderrc.cjs
+✅ louder.config.js / louder.config.cjs
+✅ "louder" key in package.json
+```
+
+Automatically discovered thanks to [cosmiconfig](https://github.com/davidtheclark/cosmiconfig).
 
 ---
 
-## Sound Types
+## 🔊 Sound Types
 
-이벤트 타입에 맞는 8가지 사운드:
+8 sound types for different situations:
 
-| 타입 | 용도 | macOS | Linux | Windows |
-|------|------|-------|-------|---------|
-| `success` | 작업 완료 | Glass | complete.oga | tada.wav |
-| `info` | 정보 알림 | Blow | dialog-information.oga | Background.wav |
-| `warning` | 경고 | Sosumi | dialog-warning.oga | Exclamation.wav |
-| `error` | 오류 | Basso | dialog-error.oga | Critical Stop.wav |
-| `progress` | 진행 상황 | Tink | message.oga | Notify.wav |
-| `reminder` | 리마인더 | Ping | bell.oga | notify.wav |
-| `default` | 기본 | Glass | complete.oga | notify.wav |
-| `silent` | 무음 | - | - | - |
+| Type | Use Case | macOS Sound |
+|------|----------|-------------|
+| `success` | Task completed | Glass |
+| `info` | Information | Blow |
+| `warning` | Warning | Sosumi |
+| `error` | Error | Basso |
+| `progress` | Progress update | Tink |
+| `reminder` | Reminder | Ping |
+| `default` | Default | Glass |
+| `silent` | No sound | - |
 
-### 이벤트별 사운드 설정
+### 🎯 Event-Specific Sounds
 
-각 이벤트에 다른 사운드를 지정할 수 있습니다:
+Assign different sounds to each event:
 
 ```json
 {
   "events": {
-    "stop": "success",
-    "error": "error",
-    "idle": "reminder",
-    "progress": "progress",
-    "notification": false
+    "stop": "success",        // Task complete → success sound
+    "error": "error",          // Error → error sound
+    "idle": "reminder",        // Idle → reminder sound
+    "progress": "progress",    // In progress → progress sound
+    "notification": false      // Disable notification
   }
 }
 ```
 
-- `true`: 기본 사운드 사용
-- `false`: 해당 이벤트 비활성화
-- `SoundType`: 특정 사운드 사용
+**Value options**:
+- `true` → Use default sound
+- `false` → Completely disable event (no sound, no notification)
+- `"success"`, `"error"`, etc. → Specify sound type
 
 ---
 
-## Programmatic API
+## 💡 Usage Examples
 
-### Notifier 생성
+### 📌 Scenario 1: Default Settings (Just Use It)
 
-```typescript
-import { createNotifier } from '@feelso/echo'
-
-const notifier = createNotifier({
-  title: "My App",
-  sound: "success",
-})
-
-// 알림 트리거
-await notifier.trigger()
-
-// 알림 취소
-notifier.cancel()
-```
-
-### 편의 메서드
-
-```typescript
-const notifier = createNotifier()
-
-// 작업 완료 알림
-await notifier.sendTaskComplete("Build", "Completed in 3.2s")
-
-// 에러 알림
-await notifier.sendError("Build failed", "TypeScript errors found")
-
-// 진행 상황 알림
-await notifier.sendProgress("Installing", "2/5 packages")
-
-// 커스텀 알림
-await notifier.sendCustom({
-  title: "Custom",
-  message: "Hello",
-  sound: "info",
-  subtitle: "Subtitle",
-})
-```
-
-### 독립 함수
-
-```typescript
-import {
-  sendTaskCompleteNotification,
-  sendErrorNotification,
-  sendProgressNotification,
-} from '@feelso/echo'
-
-await sendTaskCompleteNotification("Deployment", "Successfully deployed")
-await sendErrorNotification("API Error", "Connection timeout")
-await sendProgressNotification("Processing", "50% complete")
-```
-
-### 저수준 API
-
-```typescript
-import {
-  sendNotification,
-  playSound,
-} from '@feelso/echo'
-
-// 알림만 보내기
-await sendNotification({
-  title: "Title",
-  message: "Message",
-  subtitle: "Subtitle",
-  open: "https://example.com",
-})
-
-// 사운드만 재생
-await playSound({ soundType: "success" })
-```
-
-### 설정 로드
-
-```typescript
-import { loadConfig } from '@feelso/echo'
-
-const config = await loadConfig()
-// 또는 특정 디렉토리에서 검색
-const config = await loadConfig("/path/to/project")
-```
-
----
-
-## Platform Support
-
-| 플랫폼 | 알림 | 사운드 | URL 열기 |
-|--------|------|--------|----------|
-| **macOS** | osascript | afplay | ✅ |
-| **Linux** | notify-send | paplay/aplay | ❌ |
-| **Windows** | PowerShell Toast | PowerShell | ❌ |
-
----
-
-## Events
-
-### Claude Code Events
-
-| 이벤트 | 설명 | 기본 사운드 |
-|--------|------|-------------|
-| `Stop` | 에이전트 작업 완료 | success |
-| `Notification` | 사용자 입력 필요 | info |
-
-### OpenCode Events
-
-| 이벤트 | 설명 | 기본 사운드 |
-|--------|------|-------------|
-| `session.idle` | 세션 유휴 상태 | reminder |
-| `session.error` | 세션 오류 | error |
-| `session.progress` | 진행 상황 업데이트 | progress |
-
----
-
-## Examples
-
-### 기본 사용
+No configuration needed:
 
 ```json
 {
@@ -289,30 +388,38 @@ const config = await loadConfig("/path/to/project")
 }
 ```
 
-### 이벤트별 사운드
+Get notification + default sound 1.5 seconds after task completes.
+
+### 📌 Scenario 2: Different Sounds per Event
+
+Only differentiate success and error:
 
 ```json
 {
   "events": {
-    "stop": "success",
-    "error": "error"
+    "stop": "success",     // Task complete → cheerful sound
+    "error": "error"       // Error → heavy sound
   }
 }
 ```
 
-### 에러만 알림
+### 📌 Scenario 3: Only Notify on Errors
+
+Focus mode - only get interrupted for errors:
 
 ```json
 {
   "events": {
-    "stop": false,
-    "idle": false,
-    "error": "error"
+    "stop": false,         // Silent on normal completion
+    "idle": false,         // Ignore idle
+    "error": "error"       // Only notify on errors!
   }
 }
 ```
 
-### 무음 알림
+### 📌 Scenario 4: Silent Notifications (Quiet Office)
+
+Get notifications but no sound:
 
 ```json
 {
@@ -320,36 +427,200 @@ const config = await loadConfig("/path/to/project")
 }
 ```
 
-### URL 열기 (macOS)
+Visual notifications only.
+
+### 📌 Scenario 5: Click to Open Log File
+
+Check log immediately after build completes:
 
 ```json
 {
-  "title": "Task Complete",
-  "message": "Click to view logs",
+  "title": "Build Complete",
+  "message": "Click to view log",
   "open": "file:///var/log/build.log"
+}
+```
+
+Click notification → log file opens automatically!
+
+### 📌 Scenario 6: Jump Straight to GitHub PR
+
+Go to PR after CI completes:
+
+```json
+{
+  "title": "CI Passed!",
+  "message": "Check your PR",
+  "open": "https://github.com/yourname/repo/pull/123"
 }
 ```
 
 ---
 
-## TypeScript Support
+## 📚 Programmatic API
 
-모든 타입이 export됩니다:
+Detailed API documentation for developers. Reference this section if you want to use Louder directly in your code.
+
+### 🏗️ Create Notifier
 
 ```typescript
-import type {
-  NotifierConfig,
-  Notifier,
-  NotificationOptions,
-  SoundType,
-  SoundOptions,
-  EchoEvent,
-  EchoConfig,
-} from '@feelso/echo'
+import { createNotifier } from '@feelso/louder'
+
+const notifier = createNotifier({
+  title: "My App",
+  sound: "success",
+})
+
+// Trigger notification
+await notifier.trigger()
+
+// Cancel notification
+notifier.cancel()
+```
+
+### 🎁 Convenience Methods (Common Notifications)
+
+```typescript
+const notifier = createNotifier()
+
+// Task complete notification
+await notifier.sendTaskComplete("Build", "Completed in 3.2s")
+
+// Error notification
+await notifier.sendError("Build failed", "TypeScript errors found")
+
+// Progress notification
+await notifier.sendProgress("Installing", "2/5 packages")
+
+// Custom notification
+await notifier.sendCustom({
+  title: "Custom",
+  message: "Hello",
+  sound: "info",
+  subtitle: "Subtitle",
+})
+```
+
+### ⚡ Standalone Functions (Quick One-Off)
+
+```typescript
+import {
+  sendTaskCompleteNotification,
+  sendErrorNotification,
+  sendProgressNotification,
+} from '@feelso/louder'
+
+await sendTaskCompleteNotification("Deployment", "Successfully deployed")
+await sendErrorNotification("API Error", "Connection timeout")
+await sendProgressNotification("Processing", "50% complete")
+```
+
+### 🔧 Low-Level API (Fine Control)
+
+```typescript
+import {
+  sendNotification,
+  playSound,
+} from '@feelso/louder'
+
+// Send notification only
+await sendNotification({
+  title: "Title",
+  message: "Message",
+  subtitle: "Subtitle",
+  open: "https://example.com",
+})
+
+// Play sound only
+await playSound({ soundType: "success" })
+```
+
+### 📂 Load Configuration
+
+```typescript
+import { loadConfig } from '@feelso/louder'
+
+const config = await loadConfig()
+// Or search in specific directory
+const config = await loadConfig("/path/to/project")
 ```
 
 ---
 
-## License
+---
 
-MIT
+## 🖥️ Platform Support
+
+| Platform | Notifications | Sound | Open URLs | Support Status |
+|----------|---------------|-------|-----------|----------------|
+| **macOS** | osascript | afplay | ✅ | ✅ Full support |
+| **Windows** | - | - | ❌ | ❌ Not supported |
+| **Linux** | - | - | ❌ | ❌ Not supported |
+
+> 💡 **macOS only**. We use macOS native notification system and sound, so it doesn't work on other platforms.
+
+---
+
+## 📡 Event Details
+
+### Claude Code Events
+
+| Event | Description | Default Sound |
+|-------|-------------|---------------|
+| `Stop` | Agent task completed | success |
+| `Notification` | User input required | info |
+
+### OpenCode Events
+
+| Event | Description | Default Sound |
+|-------|-------------|---------------|
+| `session.idle` | Session idle | reminder |
+| `session.error` | Session error | error |
+| `session.progress` | Progress update | progress |
+
+---
+
+## 🎯 TypeScript Support
+
+If you're using TypeScript, you can import all types:
+
+```typescript
+import type {
+  NotifierConfig,      // Notifier creation options
+  Notifier,            // Notifier instance type
+  NotificationOptions, // Notification options
+  SoundType,           // Sound type ('success' | 'error' | ...)
+  SoundOptions,        // Sound options
+  EchoEvent,           // Event type
+  EchoConfig,          // Configuration file type
+} from '@feelso/louder'
+```
+
+Free autocomplete and type checking! 🎉
+
+---
+
+## 🤝 Contributing
+
+Found a bug or have a feature suggestion?
+
+1. [Report an issue](https://github.com/feelsodev/louder/issues)
+2. Pull requests welcome!
+
+---
+
+## 📄 License
+
+MIT License - use it freely!
+
+---
+
+<div align="center">
+
+**Made by**: [@feelso](https://github.com/feelso)
+
+Built this because I wanted to do other things while AI codes 😄
+
+⭐ If this helped you, please give it a star!
+
+</div>
