@@ -1,9 +1,9 @@
-import { exec } from "node:child_process"
+import { execFile } from "node:child_process"
 import { promisify } from "node:util"
 import { access, constants } from "node:fs/promises"
 import { detectPlatform, type Platform } from "./platform"
 
-const execAsync = promisify(exec)
+const execFileAsync = promisify(execFile)
 
 export type SoundType = 
   | "success"
@@ -77,20 +77,20 @@ async function fileExists(path: string): Promise<boolean> {
 }
 
 async function playDarwinSound(soundPath: string): Promise<void> {
-  await execAsync(`afplay "${soundPath}"`)
+  await execFileAsync('afplay', [soundPath])
 }
 
 async function playLinuxSound(soundPath: string): Promise<void> {
   try {
-    await execAsync(`paplay "${soundPath}" 2>/dev/null`)
+    await execFileAsync('paplay', [soundPath])
   } catch {
-    await execAsync(`aplay "${soundPath}" 2>/dev/null`)
+    await execFileAsync('aplay', [soundPath])
   }
 }
 
 async function playWindowsSound(soundPath: string): Promise<void> {
-  const script = `(New-Object Media.SoundPlayer '${soundPath}').PlaySync()`
-  await execAsync(`powershell -Command "${script}"`)
+  const script = `(New-Object Media.SoundPlayer '${soundPath.replace(/'/g, "''")}').PlaySync()`
+  await execFileAsync('powershell', ['-NoProfile', '-Command', script])
 }
 
 export async function playSound(options: SoundOptions = {}): Promise<boolean> {
