@@ -1,10 +1,10 @@
 import { platform } from "node:os"
 
-export type Platform = "darwin" | "linux" | "win32" | "unsupported"
+export type Platform = "darwin" | "unsupported"
 
 export function detectPlatform(): Platform {
   const p = platform()
-  if (p === "darwin" || p === "linux" || p === "win32") {
+  if (p === "darwin") {
     return p
   }
   return "unsupported"

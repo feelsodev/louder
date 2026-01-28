@@ -32,39 +32,11 @@ const MACOS_SOUNDS: Record<SoundType, string> = {
   silent: "",
 }
 
-const LINUX_SOUNDS: Record<SoundType, string> = {
-  success: "/usr/share/sounds/freedesktop/stereo/complete.oga",
-  info: "/usr/share/sounds/freedesktop/stereo/dialog-information.oga",
-  warning: "/usr/share/sounds/freedesktop/stereo/dialog-warning.oga",
-  error: "/usr/share/sounds/freedesktop/stereo/dialog-error.oga",
-  progress: "/usr/share/sounds/freedesktop/stereo/message.oga",
-  reminder: "/usr/share/sounds/freedesktop/stereo/bell.oga",
-  default: "/usr/share/sounds/freedesktop/stereo/complete.oga",
-  silent: "",
-}
-
-const WINDOWS_SOUNDS: Record<SoundType, string> = {
-  success: "C:\\Windows\\Media\\tada.wav",
-  info: "C:\\Windows\\Media\\Windows Background.wav",
-  warning: "C:\\Windows\\Media\\Windows Exclamation.wav",
-  error: "C:\\Windows\\Media\\Windows Critical Stop.wav",
-  progress: "C:\\Windows\\Media\\Windows Notify System Generic.wav",
-  reminder: "C:\\Windows\\Media\\notify.wav",
-  default: "C:\\Windows\\Media\\notify.wav",
-  silent: "",
-}
-
 function getSoundPath(soundType: SoundType, platform: Platform): string {
-  switch (platform) {
-    case "darwin":
-      return MACOS_SOUNDS[soundType]
-    case "linux":
-      return LINUX_SOUNDS[soundType]
-    case "win32":
-      return WINDOWS_SOUNDS[soundType]
-    default:
-      return ""
+  if (platform === "darwin") {
+    return MACOS_SOUNDS[soundType]
   }
+  return ""
 }
 
 async function fileExists(path: string): Promise<boolean> {
@@ -80,23 +52,10 @@ async function playDarwinSound(soundPath: string): Promise<void> {
   await execFileAsync('afplay', [soundPath])
 }
 
-async function playLinuxSound(soundPath: string): Promise<void> {
-  try {
-    await execFileAsync('paplay', [soundPath])
-  } catch {
-    await execFileAsync('aplay', [soundPath])
-  }
-}
-
-async function playWindowsSound(soundPath: string): Promise<void> {
-  const script = `(New-Object Media.SoundPlayer '${soundPath.replace(/'/g, "''")}').PlaySync()`
-  await execFileAsync('powershell', ['-NoProfile', '-Command', script])
-}
-
 export async function playSound(options: SoundOptions = {}): Promise<boolean> {
   const currentPlatform = options.platform ?? detectPlatform()
   const soundType = options.soundType ?? "default"
-  
+
   if (soundType === "silent") {
     return true
   }
@@ -113,19 +72,11 @@ export async function playSound(options: SoundOptions = {}): Promise<boolean> {
   }
 
   try {
-    switch (currentPlatform) {
-      case "darwin":
-        await playDarwinSound(soundPath)
-        return true
-      case "linux":
-        await playLinuxSound(soundPath)
-        return true
-      case "win32":
-        await playWindowsSound(soundPath)
-        return true
-      default:
-        return false
+    if (currentPlatform === "darwin") {
+      await playDarwinSound(soundPath)
+      return true
     }
+    return false
   } catch {
     return false
   }
