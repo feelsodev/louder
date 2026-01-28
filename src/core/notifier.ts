@@ -41,6 +41,7 @@ export function createNotifier(config: NotifierConfig = {}): Notifier {
   const platform = detectPlatform()
 
   let pendingTimer: ReturnType<typeof setTimeout> | null = null
+  let pendingResolve: (() => void) | null = null
   let cancelled = false
 
   async function executeNotification(
@@ -72,10 +73,13 @@ export function createNotifier(config: NotifierConfig = {}): Notifier {
   return {
     trigger: async (overrides?: Partial<NotifierConfig>) => {
       cancelled = false
+      pendingResolve = null
 
       if (mergedConfig.delay > 0) {
         return new Promise<void>((resolve) => {
+          pendingResolve = resolve
           pendingTimer = setTimeout(async () => {
+            pendingResolve = null
             await executeNotification(overrides)
             resolve()
           }, mergedConfig.delay)
@@ -90,6 +94,10 @@ export function createNotifier(config: NotifierConfig = {}): Notifier {
       if (pendingTimer) {
         clearTimeout(pendingTimer)
         pendingTimer = null
+      }
+      if (pendingResolve) {
+        pendingResolve()
+        pendingResolve = null
       }
     },
 

@@ -49,19 +49,19 @@ describe("createNotifier", () => {
     expect(notifier).toBeDefined()
   })
 
-  test("should cancel pending notification", async () => {
+  test("should cancel pending notification and resolve immediately", async () => {
     const notifier = createNotifier({ delay: 5000 })
 
     const triggerPromise = notifier.trigger()
     notifier.cancel()
 
-    await expect(
-      Promise.race([
-        triggerPromise,
-        new Promise((_, reject) =>
-          setTimeout(() => reject(new Error("timeout")), 100)
-        ),
-      ])
-    ).rejects.toThrow("timeout")
+    const result = await Promise.race([
+      triggerPromise.then(() => "resolved"),
+      new Promise<string>((resolve) =>
+        setTimeout(() => resolve("timeout"), 100)
+      ),
+    ])
+
+    expect(result).toBe("resolved")
   })
 })
