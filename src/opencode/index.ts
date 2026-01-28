@@ -2,6 +2,36 @@ import { createNotifier, type Notifier } from "../core/notifier"
 import { resolveSoundType, type SoundType } from "../core/sound"
 import { loadConfig, type EchoConfig, type EchoEvent } from "../config"
 
+const MAX_SESSIONS = 100
+
+function createLRUSet(maxSize: number = MAX_SESSIONS) {
+  const map = new Map<string, number>() // sessionId -> timestamp
+
+  return {
+    add(key: string) {
+      if (map.has(key)) {
+        map.delete(key) // 기존 항목 삭제 (순서 갱신)
+      }
+      map.set(key, Date.now())
+
+      // 초과 시 가장 오래된 항목 삭제
+      if (map.size > maxSize) {
+        const oldest = map.keys().next().value
+        if (oldest) map.delete(oldest)
+      }
+    },
+    has(key: string): boolean {
+      return map.has(key)
+    },
+    delete(key: string): boolean {
+      return map.delete(key)
+    },
+    clear() {
+      map.clear()
+    },
+  }
+}
+
 export interface OpenCodeEvent {
   type: string
   properties?: Record<string, unknown>
@@ -51,8 +81,8 @@ export async function createOpenCodePlugin(ctx: OpenCodePluginInput): Promise<Op
 
   const notifier: Notifier = createNotifier(notifierConfig)
 
-  const notifiedSessions = new Set<string>()
-  const activitySessions = new Set<string>()
+  const notifiedSessions = createLRUSet()
+  const activitySessions = createLRUSet()
 
   function markActivity(sessionID: string) {
     activitySessions.add(sessionID)
