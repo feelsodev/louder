@@ -564,7 +564,6 @@ await sendProgressNotification("Processing", "50% complete")
 import {
   sendNotification,
   playSound,
-  playHaptic,
 } from '@feelso/louder'
 
 // Send notification only
@@ -577,9 +576,6 @@ await sendNotification({
 
 // Play sound only
 await playSound({ soundType: "success" })
-
-// Trigger haptic only
-await playHaptic({ hapticType: "success" })
 ```
 
 ### 📂 Load Configuration
@@ -638,8 +634,6 @@ import type {
   NotificationOptions, // Notification options
   SoundType,           // Sound type ('success' | 'error' | ...)
   SoundOptions,        // Sound options
-  HapticType,          // Haptic type ('success' | 'error')
-  HapticOptions,       // Haptic options
   EchoEvent,           // Event type
   EchoConfig,          // Configuration file type
 } from '@feelso/louder'
