@@ -57,7 +57,7 @@ Add to your `opencode.jsonc`:
 
 ```json
 {
-  "plugins": ["louder@0.1.5"]
+  "plugins": ["louder@0.1.6"]
 }
 ```
 
@@ -89,7 +89,7 @@ Give your AI a task. When it finishes, you'll hear it. 🔊
 
 ```json
 {
-  "plugins": ["louder@0.1.5"]
+  "plugins": ["louder@0.1.6"]
 }
 ```
 
