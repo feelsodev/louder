@@ -48,8 +48,10 @@ async function fileExists(path: string): Promise<boolean> {
   }
 }
 
+const SOUND_TIMEOUT_MS = 30000
+
 async function playDarwinSound(soundPath: string): Promise<void> {
-  await execFileAsync('afplay', [soundPath])
+  await execFileAsync('afplay', [soundPath], { timeout: SOUND_TIMEOUT_MS })
 }
 
 export async function playSound(options: SoundOptions = {}): Promise<boolean> {

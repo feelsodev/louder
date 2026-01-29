@@ -115,36 +115,38 @@ export async function createOpenCodePlugin(ctx: OpenCodePluginInput): Promise<Op
 
   return {
     event: async ({ event }) => {
-      const props = event.properties as Record<string, unknown> | undefined
+      try {
+        const props = event.properties as Record<string, unknown> | undefined
 
-      if (event.type === "session.updated" || event.type === "message.updated") {
-        const info = props?.info as Record<string, unknown> | undefined
-        const sessionID = (info?.id ?? info?.sessionID ?? props?.sessionID) as string | undefined
-        if (sessionID) {
-          markActivity(sessionID)
+        if (event.type === "session.updated" || event.type === "message.updated") {
+          const info = props?.info as Record<string, unknown> | undefined
+          const sessionID = (info?.id ?? info?.sessionID ?? props?.sessionID) as string | undefined
+          if (sessionID) {
+            markActivity(sessionID)
+          }
+          return
         }
-        return
-      }
 
-      if (event.type === "session.idle") {
-        const sessionID = props?.sessionID as string | undefined
-        if (!sessionID) return
-        await handleNotification(sessionID, "session.idle")
-      }
+        if (event.type === "session.idle") {
+          const sessionID = props?.sessionID as string | undefined
+          if (!sessionID) return
+          await handleNotification(sessionID, "session.idle")
+        }
 
-      if (event.type === "session.error") {
-        const sessionID = props?.sessionID as string | undefined
-        if (!sessionID) return
-        const errorMessage = props?.error as string | undefined
-        await handleNotification(sessionID, "session.error", errorMessage)
-      }
+        if (event.type === "session.error") {
+          const sessionID = props?.sessionID as string | undefined
+          if (!sessionID) return
+          const errorMessage = props?.error as string | undefined
+          await handleNotification(sessionID, "session.error", errorMessage)
+        }
 
-      if (event.type === "session.progress") {
-        const sessionID = props?.sessionID as string | undefined
-        if (!sessionID) return
-        const status = props?.status as string | undefined
-        await handleNotification(sessionID, "session.progress", status)
-      }
+        if (event.type === "session.progress") {
+          const sessionID = props?.sessionID as string | undefined
+          if (!sessionID) return
+          const status = props?.status as string | undefined
+          await handleNotification(sessionID, "session.progress", status)
+        }
+      } catch {}
     },
   }
 }

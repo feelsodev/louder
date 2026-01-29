@@ -78,10 +78,11 @@ export function createNotifier(config: NotifierConfig = {}): Notifier {
       if (mergedConfig.delay > 0) {
         return new Promise<void>((resolve) => {
           pendingResolve = resolve
-          pendingTimer = setTimeout(async () => {
+          pendingTimer = setTimeout(() => {
             pendingResolve = null
-            await executeNotification(overrides)
-            resolve()
+            executeNotification(overrides)
+              .catch(() => {})
+              .finally(() => resolve())
           }, mergedConfig.delay)
         })
       }

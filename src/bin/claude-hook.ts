@@ -4,9 +4,25 @@ async function readStdin(): Promise<string> {
   const chunks: Buffer[] = []
 
   return new Promise((resolve, reject) => {
-    process.stdin.on("data", (chunk: Buffer) => chunks.push(chunk))
-    process.stdin.on("end", () => resolve(Buffer.concat(chunks).toString("utf-8")))
-    process.stdin.on("error", reject)
+    const onData = (chunk: Buffer) => chunks.push(chunk)
+    const onEnd = () => {
+      cleanup()
+      resolve(Buffer.concat(chunks).toString("utf-8"))
+    }
+    const onError = (err: Error) => {
+      cleanup()
+      reject(err)
+    }
+
+    const cleanup = () => {
+      process.stdin.removeListener("data", onData)
+      process.stdin.removeListener("end", onEnd)
+      process.stdin.removeListener("error", onError)
+    }
+
+    process.stdin.on("data", onData)
+    process.stdin.on("end", onEnd)
+    process.stdin.on("error", onError)
   })
 }
 
@@ -20,4 +36,4 @@ async function main(): Promise<void> {
   }
 }
 
-main()
+main().catch(() => process.exit(1))
