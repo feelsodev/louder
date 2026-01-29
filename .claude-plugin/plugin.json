@@ -1,6 +1,6 @@
 {
   "name": "louder",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Sound and haptic feedback when AI tasks complete. Your AI learned to shout.",
   "author": {
     "name": "feelso",
