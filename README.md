@@ -147,6 +147,26 @@ If user wants haptic, create `~/.louderrc.json`:
 
 Tell your user: *"Louder installed. You'll hear a sound (and feel a vibration if enabled) when tasks complete."*
 
+### Changing Settings
+
+When user asks to change Louder settings, edit `~/.louderrc.json`:
+
+| User Request | Config |
+|--------------|--------|
+| "Turn off sound" | `{ "sound": false }` |
+| "Turn on haptic" | `{ "haptic": true }` |
+| "Turn off haptic" | `{ "haptic": false }` |
+| "Only notify on errors" | `{ "events": { "stop": false, "error": "error" } }` |
+| "Change sound to Ping" | `{ "sound": "reminder" }` |
+| "Disable all notifications" | `{ "sound": false, "haptic": false }` |
+
+**Available sound types:** `success`, `error`, `info`, `warning`, `progress`, `reminder`, `silent`
+
+**Show current settings:**
+```bash
+cat ~/.louderrc.json 2>/dev/null || echo "Using defaults (sound: on, haptic: off)"
+```
+
 ---
 
 ## 🚀 Quick Start
