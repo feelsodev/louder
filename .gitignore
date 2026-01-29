@@ -31,3 +31,9 @@ yarn.lock
 pnpm-lock.yaml
 bun.lockb
 
+
+# Local config
+.louderrc.json
+.claude/
+.omc/
+opencode.json
