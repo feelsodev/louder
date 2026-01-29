@@ -28,8 +28,8 @@ interface InternalHapticOptions {
   platform?: Platform
 }
 
-const ACTUATION_STRONG = 6
-const ACTUATION_WEAK = 3
+const ACTUATION_STRONG = 15
+const ACTUATION_WEAK = 6
 
 const HAPTIC_ACTUATION_MAP: Record<HapticType, number> = {
   success: ACTUATION_STRONG,

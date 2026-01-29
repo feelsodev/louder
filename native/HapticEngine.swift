@@ -103,8 +103,8 @@ func invalidateCache() {
 }
 
 /// Actuation IDs: 1=very weak, 3=weak, 4=medium, 5=medium-strong, 6=strong, 15=very strong
-let ACTUATION_STRONG: Int32 = 6
-let ACTUATION_WEAK: Int32 = 3
+let ACTUATION_STRONG: Int32 = 15
+let ACTUATION_WEAK: Int32 = 6
 
 func triggerHaptic(actuationID: Int32, intensity: Float) -> Bool {
     guard let createFunc = mtActuatorCreateFromDeviceID,
