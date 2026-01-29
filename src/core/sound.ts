@@ -5,6 +5,14 @@ import { detectPlatform, type Platform } from "./platform"
 
 const execFileAsync = promisify(execFile)
 
+const DEBUG = process.env.DEBUG === "louder" || process.env.DEBUG === "*"
+
+function debug(message: string, ...args: unknown[]): void {
+  if (DEBUG) {
+    console.error(`[louder:sound] ${message}`, ...args)
+  }
+}
+
 export type SoundType = 
   | "success"
   | "info"
@@ -48,7 +56,7 @@ async function fileExists(path: string): Promise<boolean> {
   }
 }
 
-const SOUND_TIMEOUT_MS = 30000
+const SOUND_TIMEOUT_MS = 4000
 
 async function playDarwinSound(soundPath: string): Promise<void> {
   await execFileAsync('afplay', [soundPath], { timeout: SOUND_TIMEOUT_MS })
@@ -58,28 +66,36 @@ export async function playSound(options: SoundOptions = {}): Promise<boolean> {
   const currentPlatform = options.platform ?? detectPlatform()
   const soundType = options.soundType ?? "default"
 
+  debug("playSound called", { soundType, platform: currentPlatform })
+
   if (soundType === "silent") {
+    debug("sound type is silent, skipping")
     return true
   }
 
   const soundPath = options.soundPath ?? getSoundPath(soundType, currentPlatform)
 
   if (!soundPath || currentPlatform === "unsupported") {
+    debug("unsupported platform or empty soundPath", { soundPath, platform: currentPlatform })
     return false
   }
 
   const exists = await fileExists(soundPath)
   if (!exists) {
+    debug("sound file not found", { soundPath })
     return false
   }
 
   try {
     if (currentPlatform === "darwin") {
+      debug("playing sound via afplay", { soundPath })
       await playDarwinSound(soundPath)
+      debug("sound played successfully")
       return true
     }
     return false
-  } catch {
+  } catch (error) {
+    debug("failed to play sound", { error })
     return false
   }
 }

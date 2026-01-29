@@ -1,5 +1,13 @@
 import { detectPlatform, type Platform } from "./platform"
 
+const DEBUG = process.env.DEBUG === "louder" || process.env.DEBUG === "*"
+
+function debug(message: string, ...args: unknown[]): void {
+  if (DEBUG) {
+    console.error(`[louder:haptic] ${message}`, ...args)
+  }
+}
+
 export type HapticType = "success" | "error"
 
 type InternalHapticType = HapticType | "silent"
@@ -42,8 +50,10 @@ async function getHapticFeedbackInstance(): Promise<HapticFeedbackInstance | nul
       const module = await import("haptic-feedback-swift")
       const HapticFeedback = module.HapticFeedback as new () => HapticFeedbackInstance
       hapticFeedbackInstance = new HapticFeedback()
+      debug("haptic-feedback-swift loaded successfully")
       return hapticFeedbackInstance
-    } catch {
+    } catch (error) {
+      debug("haptic-feedback-swift not available", { error })
       return null
     }
   })()
@@ -55,24 +65,32 @@ export async function playHaptic(options: InternalHapticOptions = {}): Promise<b
   const currentPlatform = options.platform ?? detectPlatform()
   const hapticType = options.hapticType ?? "success"
 
+  debug("playHaptic called", { hapticType, platform: currentPlatform })
+
   if (hapticType === "silent") {
+    debug("haptic type is silent, skipping")
     return true
   }
 
   if (currentPlatform !== "darwin") {
+    debug("unsupported platform for haptic", { platform: currentPlatform })
     return false
   }
 
   try {
     const instance = await getHapticFeedbackInstance()
     if (!instance) {
+      debug("haptic instance not available")
       return false
     }
 
     const pattern = HAPTIC_PATTERN_MAP[hapticType]
+    debug("triggering haptic", { pattern })
     instance.trigger(pattern)
+    debug("haptic triggered successfully")
     return true
-  } catch {
+  } catch (error) {
+    debug("failed to trigger haptic", { error })
     return false
   }
 }

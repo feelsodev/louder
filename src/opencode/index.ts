@@ -2,38 +2,70 @@ import { createNotifier, type Notifier } from "../core/notifier"
 import { resolveSoundType, type SoundType } from "../core/sound"
 import { loadConfig, type EchoConfig, type EchoEvent } from "../config"
 
+const DEBUG = process.env.DEBUG === "louder" || process.env.DEBUG === "*"
+
+function debug(message: string, ...args: unknown[]): void {
+  if (DEBUG) {
+    console.error(`[louder:opencode] ${message}`, ...args)
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value)
+}
+
+function isString(value: unknown): value is string {
+  return typeof value === "string"
+}
+
+function extractSessionID(props: Record<string, unknown> | undefined): string | undefined {
+  if (!props) return undefined
+
+  if (isString(props.sessionID)) {
+    return props.sessionID
+  }
+
+  const info = props.info
+  if (isRecord(info)) {
+    if (isString(info.id)) return info.id
+    if (isString(info.sessionID)) return info.sessionID
+  }
+
+  return undefined
+}
+
 const MAX_SESSIONS = 100
 
 function createLRUSet(maxSize: number = MAX_SESSIONS) {
-  const map = new Map<string, number>()
+  const set = new Set<string>()
 
   return {
     add(key: string) {
-      if (map.has(key)) {
-        map.delete(key)
+      if (set.has(key)) {
+        set.delete(key)
       }
-      map.set(key, Date.now())
+      set.add(key)
 
-      if (map.size > maxSize) {
-        const oldest = map.keys().next().value
-        if (oldest) map.delete(oldest)
+      if (set.size > maxSize) {
+        const oldest = set.values().next().value
+        if (oldest) set.delete(oldest)
       }
     },
     has(key: string): boolean {
-      return map.has(key)
+      return set.has(key)
     },
     delete(key: string): boolean {
-      return map.delete(key)
+      return set.delete(key)
     },
     clear() {
-      map.clear()
+      set.clear()
     },
   }
 }
 
 export interface OpenCodeEvent {
   type: string
-  properties?: Record<string, unknown>
+  properties?: unknown
 }
 
 export interface OpenCodePluginInput {
@@ -110,35 +142,42 @@ export async function createOpenCodePlugin(ctx: OpenCodePluginInput): Promise<Op
   return {
     event: async ({ event }) => {
       try {
-        const props = event.properties as Record<string, unknown> | undefined
+        const props = isRecord(event.properties) ? event.properties : undefined
+
+        debug("received event", { type: event.type, props })
 
         if (event.type === "session.updated" || event.type === "message.updated") {
-          const info = props?.info as Record<string, unknown> | undefined
-          const sessionID = (info?.id ?? info?.sessionID ?? props?.sessionID) as string | undefined
+          const sessionID = extractSessionID(props)
           if (sessionID) {
+            debug("marking activity for session", { sessionID })
             markActivity(sessionID)
           }
           return
         }
 
         if (event.type === "session.idle") {
-          const sessionID = props?.sessionID as string | undefined
+          const sessionID = extractSessionID(props)
           if (!sessionID) return
+          debug("handling session.idle", { sessionID })
           await handleNotification(sessionID, "session.idle")
         }
 
         if (event.type === "session.error") {
-          const sessionID = props?.sessionID as string | undefined
+          const sessionID = extractSessionID(props)
           if (!sessionID) return
+          debug("handling session.error", { sessionID })
           await handleNotification(sessionID, "session.error")
         }
 
         if (event.type === "session.progress") {
-          const sessionID = props?.sessionID as string | undefined
+          const sessionID = extractSessionID(props)
           if (!sessionID) return
+          debug("handling session.progress", { sessionID })
           await handleNotification(sessionID, "session.progress")
         }
-      } catch {}
+      } catch (error) {
+        debug("error handling event", { error })
+      }
     },
   }
 }
