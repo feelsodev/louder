@@ -9,6 +9,5 @@
   "license": "MIT",
   "keywords": ["sound", "haptic", "notification", "macos", "trackpad", "force-touch"],
   "homepage": "https://github.com/feelsodev/louder",
-  "repository": "https://github.com/feelsodev/louder",
-  "hooks": "../hooks/hooks.json"
+  "repository": "https://github.com/feelsodev/louder"
 }
