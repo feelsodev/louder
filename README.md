@@ -48,8 +48,7 @@ You: "Nice, let's keep going!"
 #### Claude Code
 
 ```
-/plugin marketplace add feelsodev/louder
-/plugin install louder
+/plugin add https://github.com/feelsodev/louder
 ```
 
 #### OpenCode
@@ -58,7 +57,7 @@ Add to your `opencode.jsonc`:
 
 ```json
 {
-  "plugins": ["louder@0.1.4"]
+  "plugins": ["louder@0.1.5"]
 }
 ```
 
@@ -83,15 +82,14 @@ Give your AI a task. When it finishes, you'll hear it. 🔊
 **Claude Code:**
 
 ```
-/plugin marketplace add feelsodev/louder
-/plugin install louder
+/plugin add https://github.com/feelsodev/louder
 ```
 
 **OpenCode:** Add to `opencode.jsonc`:
 
 ```json
 {
-  "plugins": ["louder@0.1.4"]
+  "plugins": ["louder@0.1.5"]
 }
 ```
 
