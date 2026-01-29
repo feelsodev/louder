@@ -8,7 +8,7 @@
 
 **Smart notification system for AI coding assistants**
 
-Get notified with sound when Claude Code or OpenCode finishes a task.
+Get notified with sound and haptic feedback when Claude Code or OpenCode finishes a task.
 
 [Installation](#-installation-guide-for-humans) · [Quick Start](#-quick-start) · [API Docs](#-programmatic-api)
 
@@ -32,6 +32,7 @@ You tell Claude Code "fix this bug" and then...
 
 - ✅ **Instant notification** when tasks complete (macOS system notifications)
 - 🔊 **Different sounds** for different situations (success, error, warning, etc.)
+- 📳 **Haptic feedback** on your MacBook trackpad (success/error)
 - 🖱️ **Clickable notifications** to open results (URLs, files)
 - ⚙️ **Fully customizable**
 
@@ -42,10 +43,11 @@ Now you can do other things while AI works. It'll let you know when it's done.
 ## ✨ Key Features
 
 - 🎵 **Context-aware sounds** - 8 different sounds for success, error, warning, progress, etc.
+- 📳 **Haptic feedback** - Feel task completion on your MacBook trackpad
 - 📬 **Multiple notification types** - Predefined types like Task Complete, Error, Progress
 - 🖱️ **Clickable notifications** - Click to open URLs, files, logs, etc.
 - 🍎 **macOS native** - Perfect integration with system notifications and sounds
-- ⚙️ **Fine-grained control** - Configure sound, message, delay separately per event
+- ⚙️ **Fine-grained control** - Configure sound, haptic, message, delay separately per event
 
 ---
 
@@ -317,6 +319,7 @@ touch ~/.louderrc.json
 | `open` | string | - | URL to open on click (macOS only) |
 | `sound` | boolean \| SoundType | true | Enable sound or specify sound type |
 | `soundPath` | string | System default | Custom sound file path |
+| `haptic` | boolean \| HapticType | false | Enable haptic feedback (`"success"` or `"error"`) |
 | `delay` | number | 1500 | Delay before notification (ms) |
 | `events` | object | - | Event-specific settings |
 
@@ -372,6 +375,46 @@ Assign different sounds to each event:
 - `true` → Use default sound
 - `false` → Completely disable event (no sound, no notification)
 - `"success"`, `"error"`, etc. → Specify sound type
+
+---
+
+## 📳 Haptic Feedback
+
+Feel task completion through your MacBook's Force Touch trackpad!
+
+| Type | Use Case | Feedback Pattern |
+|------|----------|------------------|
+| `success` | Task completed | Strong tap (levelChange) |
+| `error` | Error occurred | Subtle tap (generic) |
+
+### Enabling Haptic Feedback
+
+Haptic feedback is **disabled by default**. Enable it in your config:
+
+```json
+{
+  "haptic": true
+}
+```
+
+Or specify the type:
+
+```json
+{
+  "haptic": "success"
+}
+```
+
+### Haptic + Sound Combo
+
+```json
+{
+  "sound": "success",
+  "haptic": "success"
+}
+```
+
+> 💡 **Note**: Haptic feedback requires a MacBook with Force Touch trackpad and your finger on the trackpad.
 
 ---
 
@@ -521,6 +564,7 @@ await sendProgressNotification("Processing", "50% complete")
 import {
   sendNotification,
   playSound,
+  playHaptic,
 } from '@feelso/louder'
 
 // Send notification only
@@ -533,6 +577,9 @@ await sendNotification({
 
 // Play sound only
 await playSound({ soundType: "success" })
+
+// Trigger haptic only
+await playHaptic({ hapticType: "success" })
 ```
 
 ### 📂 Load Configuration
@@ -551,13 +598,13 @@ const config = await loadConfig("/path/to/project")
 
 ## 🖥️ Platform Support
 
-| Platform | Notifications | Sound | Open URLs | Support Status |
-|----------|---------------|-------|-----------|----------------|
-| **macOS** | osascript | afplay | ✅ | ✅ Full support |
-| **Windows** | - | - | ❌ | ❌ Not supported |
-| **Linux** | - | - | ❌ | ❌ Not supported |
+| Platform | Notifications | Sound | Haptic | Open URLs | Support Status |
+|----------|---------------|-------|--------|-----------|----------------|
+| **macOS** | osascript | afplay | Force Touch | ✅ | ✅ Full support |
+| **Windows** | - | - | - | ❌ | ❌ Not supported |
+| **Linux** | - | - | - | ❌ | ❌ Not supported |
 
-> 💡 **macOS only**. We use macOS native notification system and sound, so it doesn't work on other platforms.
+> 💡 **macOS only**. We use macOS native notification system, sound, and haptic feedback.
 
 ---
 
@@ -591,6 +638,8 @@ import type {
   NotificationOptions, // Notification options
   SoundType,           // Sound type ('success' | 'error' | ...)
   SoundOptions,        // Sound options
+  HapticType,          // Haptic type ('success' | 'error')
+  HapticOptions,       // Haptic options
   EchoEvent,           // Event type
   EchoConfig,          // Configuration file type
 } from '@feelso/louder'
