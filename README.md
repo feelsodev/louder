@@ -173,7 +173,7 @@ Create `.louderrc.json` in project root or `~/.louderrc.json` for global config.
 |--------|------|---------|-------------|
 | `sound` | boolean \| string | true | Sound type or `false` to disable |
 | `soundPath` | string | - | Custom sound file path (.aiff) |
-| `haptic` | boolean \| string | false | `true`, `"success"`, or `"error"` |
+| `haptic` | boolean \| string \| object | false | `true`, `"success"`, `"error"`, or `{ type, intensity }` |
 | `delay` | number | 1500 | Delay in ms before feedback |
 | `events` | object | - | Per-event overrides |
 
@@ -192,10 +192,30 @@ Create `.louderrc.json` in project root or `~/.louderrc.json` for global config.
 
 ### Haptic Types
 
-| Type | Pattern | Use For |
-|------|---------|---------|
-| `success` | Strong tap (levelChange) | Task complete |
-| `error` | Subtle tap (generic) | Errors |
+| Type | Pattern | Default Intensity | Use For |
+|------|---------|-------------------|---------|
+| `success` | Strong tap | 1.0 | Task complete |
+| `error` | Subtle tap | 0.6 | Errors |
+
+### Haptic Intensity
+
+Control haptic feedback strength with `intensity` (0.0 - 2.0):
+
+```json
+{
+  "haptic": {
+    "type": "success",
+    "intensity": 1.5
+  }
+}
+```
+
+| Intensity | Feel |
+|-----------|------|
+| 0.0 - 0.5 | Very subtle |
+| 0.5 - 1.0 | Normal |
+| 1.0 - 1.5 | Strong |
+| 1.5 - 2.0 | Maximum |
 
 ### Config Formats
 
@@ -218,6 +238,16 @@ Also supports: `.louderrc.yaml`, `.louderrc.js`, `louder.config.js`, `package.js
 **Full Feedback** - Sound + Haptic:
 ```json
 { "sound": "success", "haptic": "success" }
+```
+
+**Strong Haptic** - Maximum intensity:
+```json
+{ "haptic": { "type": "success", "intensity": 2.0 } }
+```
+
+**Subtle Haptic** - Gentle feedback:
+```json
+{ "haptic": { "type": "success", "intensity": 0.3 } }
 ```
 
 **Custom Sound** - Use your own sound file:
