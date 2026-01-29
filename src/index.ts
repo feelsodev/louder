@@ -20,12 +20,21 @@ export {
 } from "./core/sound"
 
 export {
+  playHaptic,
+  resolveHapticType,
+  type HapticType,
+  type HapticOptions,
+} from "./core/haptic"
+
+export {
   loadConfig,
   EchoConfigSchema,
   SoundTypeSchema,
+  HapticTypeSchema,
   EventConfigSchema,
   type EchoConfig,
   type SoundTypeValue,
+  type HapticTypeValue,
   type EventConfig,
   type EchoEvent,
 } from "./config"

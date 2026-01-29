@@ -1,5 +1,6 @@
 import { sendNotification } from "./notification"
 import { playSound, resolveSoundType, type SoundType } from "./sound"
+import { playHaptic, resolveHapticType, type HapticType } from "./haptic"
 import { detectPlatform, type Platform } from "./platform"
 
 export interface NotifierConfig {
@@ -9,6 +10,7 @@ export interface NotifierConfig {
   open?: string
   sound?: boolean | SoundType
   soundPath?: string
+  haptic?: boolean | HapticType
   delay?: number
 }
 
@@ -33,6 +35,7 @@ const DEFAULT_CONFIG: Required<Omit<NotifierConfig, "soundPath" | "subtitle" | "
   open: undefined,
   sound: true,
   soundPath: undefined,
+  haptic: false,
   delay: 1500,
 }
 
@@ -66,6 +69,11 @@ export function createNotifier(config: NotifierConfig = {}): Notifier {
           ? { soundType, soundPath: finalConfig.soundPath, platform }
           : { soundType, platform }
         await playSound(soundOptions)
+      }
+
+      const hapticType = resolveHapticType(finalConfig.haptic, "success")
+      if (hapticType) {
+        await playHaptic({ hapticType, platform })
       }
     }
   }
@@ -109,6 +117,7 @@ export function createNotifier(config: NotifierConfig = {}): Notifier {
         message: task,
         subtitle: details,
         sound: "success",
+        haptic: "success",
       })
     },
 
@@ -119,6 +128,7 @@ export function createNotifier(config: NotifierConfig = {}): Notifier {
         message: error,
         subtitle: details,
         sound: "error",
+        haptic: "error",
       })
     },
 
@@ -129,6 +139,7 @@ export function createNotifier(config: NotifierConfig = {}): Notifier {
         message: status,
         subtitle: details,
         sound: "progress",
+        haptic: false,
       })
     },
 

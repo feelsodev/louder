@@ -14,6 +14,11 @@ export const SoundTypeSchema = z.enum([
   "silent",
 ])
 
+export const HapticTypeSchema = z.enum([
+  "success",
+  "error",
+])
+
 export const EventConfigSchema = z.union([
   z.boolean(),
   SoundTypeSchema,
@@ -26,6 +31,7 @@ export const EchoConfigSchema = z.object({
   open: z.string().optional(),
   sound: z.union([z.boolean(), SoundTypeSchema]).optional(),
   soundPath: z.string().optional(),
+  haptic: z.union([z.boolean(), HapticTypeSchema]).optional(),
   delay: z.number().min(0).optional(),
   events: z.object({
     stop: EventConfigSchema.optional(),
@@ -38,6 +44,7 @@ export const EchoConfigSchema = z.object({
 
 export type EchoConfig = z.infer<typeof EchoConfigSchema>
 export type SoundTypeValue = z.infer<typeof SoundTypeSchema>
+export type HapticTypeValue = z.infer<typeof HapticTypeSchema>
 export type EventConfig = z.infer<typeof EventConfigSchema>
 
 const explorer = cosmiconfig("louder", {

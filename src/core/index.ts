@@ -20,6 +20,13 @@ export {
 } from "./sound"
 
 export {
+  playHaptic,
+  resolveHapticType,
+  type HapticType,
+  type HapticOptions,
+} from "./haptic"
+
+export {
   detectPlatform,
   type Platform,
 } from "./platform"
