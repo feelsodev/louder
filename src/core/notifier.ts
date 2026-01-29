@@ -1,13 +1,8 @@
-import { sendNotification } from "./notification"
 import { playSound, resolveSoundType, type SoundType } from "./sound"
 import { playHaptic, resolveHapticType, type HapticType } from "./haptic"
 import { detectPlatform, type Platform } from "./platform"
 
 export interface NotifierConfig {
-  title?: string
-  message?: string
-  subtitle?: string
-  open?: string
   sound?: boolean | SoundType
   soundPath?: string
   haptic?: boolean | HapticType
@@ -18,21 +13,11 @@ export interface Notifier {
   trigger: (overrides?: Partial<NotifierConfig>) => Promise<void>
   cancel: () => void
   platform: Platform
-  sendTaskComplete: (task: string, details?: string) => Promise<void>
-  sendError: (error: string, details?: string) => Promise<void>
-  sendProgress: (status: string, details?: string) => Promise<void>
-  sendCustom: (options: NotifierConfig) => Promise<void>
 }
 
-const DEFAULT_CONFIG: Required<Omit<NotifierConfig, "soundPath" | "subtitle" | "open">> & {
+const DEFAULT_CONFIG: Required<Omit<NotifierConfig, "soundPath">> & {
   soundPath?: string
-  subtitle?: string
-  open?: string
 } = {
-  title: "Louder",
-  message: "Task completed",
-  subtitle: undefined,
-  open: undefined,
   sound: true,
   soundPath: undefined,
   haptic: false,
@@ -47,34 +32,24 @@ export function createNotifier(config: NotifierConfig = {}): Notifier {
   let pendingResolve: (() => void) | null = null
   let cancelled = false
 
-  async function executeNotification(
+  async function execute(
     overrides: Partial<NotifierConfig> = {}
   ): Promise<void> {
     if (cancelled) return
 
     const finalConfig = { ...mergedConfig, ...overrides }
 
-    const sent = await sendNotification({
-      title: finalConfig.title,
-      message: finalConfig.message,
-      subtitle: finalConfig.subtitle,
-      open: finalConfig.open,
-      platform,
-    })
+    const soundType = resolveSoundType(finalConfig.sound, "success")
+    if (soundType) {
+      const soundOptions = finalConfig.soundPath
+        ? { soundType, soundPath: finalConfig.soundPath, platform }
+        : { soundType, platform }
+      await playSound(soundOptions)
+    }
 
-    if (sent) {
-      const soundType = resolveSoundType(finalConfig.sound, "success")
-      if (soundType) {
-        const soundOptions = finalConfig.soundPath
-          ? { soundType, soundPath: finalConfig.soundPath, platform }
-          : { soundType, platform }
-        await playSound(soundOptions)
-      }
-
-      const hapticType = resolveHapticType(finalConfig.haptic, "success")
-      if (hapticType) {
-        await playHaptic({ hapticType, platform })
-      }
+    const hapticType = resolveHapticType(finalConfig.haptic, "success")
+    if (hapticType) {
+      await playHaptic({ hapticType, platform })
     }
   }
 
@@ -88,14 +63,14 @@ export function createNotifier(config: NotifierConfig = {}): Notifier {
           pendingResolve = resolve
           pendingTimer = setTimeout(() => {
             pendingResolve = null
-            executeNotification(overrides)
+            execute(overrides)
               .catch(() => {})
               .finally(() => resolve())
           }, mergedConfig.delay)
         })
       }
 
-      await executeNotification(overrides)
+      await execute(overrides)
     },
 
     cancel: () => {
@@ -110,71 +85,6 @@ export function createNotifier(config: NotifierConfig = {}): Notifier {
       }
     },
 
-    sendTaskComplete: async (task: string, details?: string) => {
-      cancelled = false
-      await executeNotification({
-        title: "Task Complete",
-        message: task,
-        subtitle: details,
-        sound: "success",
-        haptic: "success",
-      })
-    },
-
-    sendError: async (error: string, details?: string) => {
-      cancelled = false
-      await executeNotification({
-        title: "Error",
-        message: error,
-        subtitle: details,
-        sound: "error",
-        haptic: "error",
-      })
-    },
-
-    sendProgress: async (status: string, details?: string) => {
-      cancelled = false
-      await executeNotification({
-        title: "Progress",
-        message: status,
-        subtitle: details,
-        sound: "progress",
-        haptic: false,
-      })
-    },
-
-    sendCustom: async (options: NotifierConfig) => {
-      cancelled = false
-      await executeNotification(options)
-    },
-
     platform,
   }
-}
-
-export async function sendTaskCompleteNotification(
-  task: string,
-  details?: string,
-  config: NotifierConfig = {}
-): Promise<void> {
-  const notifier = createNotifier({ ...config, delay: 0 })
-  await notifier.sendTaskComplete(task, details)
-}
-
-export async function sendErrorNotification(
-  error: string,
-  details?: string,
-  config: NotifierConfig = {}
-): Promise<void> {
-  const notifier = createNotifier({ ...config, delay: 0 })
-  await notifier.sendError(error, details)
-}
-
-export async function sendProgressNotification(
-  status: string,
-  details?: string,
-  config: NotifierConfig = {}
-): Promise<void> {
-  const notifier = createNotifier({ ...config, delay: 0 })
-  await notifier.sendProgress(status, details)
 }

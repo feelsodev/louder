@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest"
-import { EchoConfigSchema, SoundTypeSchema } from "./index"
+import { EchoConfigSchema, SoundTypeSchema, HapticTypeSchema } from "./index"
 
 describe("EchoConfigSchema", () => {
   test("should validate empty config", () => {
@@ -9,12 +9,9 @@ describe("EchoConfigSchema", () => {
 
   test("should validate full config", () => {
     const result = EchoConfigSchema.safeParse({
-      title: "My Title",
-      message: "My Message",
-      subtitle: "Subtitle",
-      open: "https://example.com",
       sound: true,
       soundPath: "/path/to/sound.aiff",
+      haptic: true,
       delay: 2000,
       events: {
         stop: true,
@@ -30,6 +27,13 @@ describe("EchoConfigSchema", () => {
   test("should validate sound as SoundType", () => {
     const result = EchoConfigSchema.safeParse({
       sound: "success",
+    })
+    expect(result.success).toBe(true)
+  })
+
+  test("should validate haptic as HapticType", () => {
+    const result = EchoConfigSchema.safeParse({
+      haptic: "error",
     })
     expect(result.success).toBe(true)
   })
@@ -53,16 +57,16 @@ describe("EchoConfigSchema", () => {
     expect(result.success).toBe(false)
   })
 
-  test("should reject invalid types", () => {
+  test("should reject invalid sound type", () => {
     const result = EchoConfigSchema.safeParse({
-      title: 123,
+      sound: "invalid-sound",
     })
     expect(result.success).toBe(false)
   })
 
-  test("should reject invalid sound type", () => {
+  test("should reject invalid haptic type", () => {
     const result = EchoConfigSchema.safeParse({
-      sound: "invalid-sound",
+      haptic: "invalid-haptic",
     })
     expect(result.success).toBe(false)
   })
@@ -89,6 +93,22 @@ describe("SoundTypeSchema", () => {
 
   test("should reject invalid sound type", () => {
     const result = SoundTypeSchema.safeParse("invalid")
+    expect(result.success).toBe(false)
+  })
+})
+
+describe("HapticTypeSchema", () => {
+  test("should validate all haptic types", () => {
+    const validTypes = ["success", "error"]
+
+    for (const type of validTypes) {
+      const result = HapticTypeSchema.safeParse(type)
+      expect(result.success).toBe(true)
+    }
+  })
+
+  test("should reject invalid haptic type", () => {
+    const result = HapticTypeSchema.safeParse("invalid")
     expect(result.success).toBe(false)
   })
 })

@@ -1,13 +1,18 @@
 import { describe, test, expect, vi, beforeEach } from "vitest"
 import { createNotifier } from "./notifier"
 
-vi.mock("./notification", () => ({
-  sendNotification: vi.fn().mockResolvedValue(true),
-}))
-
 vi.mock("./sound", () => ({
   playSound: vi.fn().mockResolvedValue(true),
   resolveSoundType: vi.fn((value, defaultType) => {
+    if (value === false) return null
+    if (value === true || value === undefined) return defaultType
+    return value
+  }),
+}))
+
+vi.mock("./haptic", () => ({
+  playHaptic: vi.fn().mockResolvedValue(true),
+  resolveHapticType: vi.fn((value, defaultType) => {
     if (value === false) return null
     if (value === true || value === undefined) return defaultType
     return value
@@ -25,19 +30,12 @@ describe("createNotifier", () => {
     expect(notifier.trigger).toBeInstanceOf(Function)
     expect(notifier.cancel).toBeInstanceOf(Function)
     expect(notifier.platform).toBeDefined()
-    expect(notifier.sendTaskComplete).toBeInstanceOf(Function)
-    expect(notifier.sendError).toBeInstanceOf(Function)
-    expect(notifier.sendProgress).toBeInstanceOf(Function)
-    expect(notifier.sendCustom).toBeInstanceOf(Function)
   })
 
   test("should create a notifier with custom config", () => {
     const notifier = createNotifier({
-      title: "Custom Title",
-      message: "Custom Message",
       sound: false,
       delay: 0,
-      subtitle: "Subtitle",
     })
     expect(notifier).toBeDefined()
   })
@@ -49,7 +47,14 @@ describe("createNotifier", () => {
     expect(notifier).toBeDefined()
   })
 
-  test("should cancel pending notification and resolve immediately", async () => {
+  test("should create a notifier with haptic enabled", () => {
+    const notifier = createNotifier({
+      haptic: true,
+    })
+    expect(notifier).toBeDefined()
+  })
+
+  test("should cancel pending trigger and resolve immediately", async () => {
     const notifier = createNotifier({ delay: 5000 })
 
     const triggerPromise = notifier.trigger()

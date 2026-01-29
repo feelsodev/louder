@@ -5,16 +5,15 @@ import { loadConfig, type EchoConfig, type EchoEvent } from "../config"
 const MAX_SESSIONS = 100
 
 function createLRUSet(maxSize: number = MAX_SESSIONS) {
-  const map = new Map<string, number>() // sessionId -> timestamp
+  const map = new Map<string, number>()
 
   return {
     add(key: string) {
       if (map.has(key)) {
-        map.delete(key) // 기존 항목 삭제 (순서 갱신)
+        map.delete(key)
       }
       map.set(key, Date.now())
 
-      // 초과 시 가장 오래된 항목 삭제
       if (map.size > maxSize) {
         const oldest = map.keys().next().value
         if (oldest) map.delete(oldest)
@@ -70,11 +69,8 @@ export async function createOpenCodePlugin(ctx: OpenCodePluginInput): Promise<Op
   const config = await loadConfig(ctx.directory)
 
   const notifierConfig = {
-    title: config.title ?? "Louder",
-    message: config.message ?? "OpenCode is ready",
-    subtitle: config.subtitle,
-    open: config.open,
     sound: config.sound ?? true,
+    haptic: config.haptic,
     delay: config.delay ?? 1500,
     ...(config.soundPath ? { soundPath: config.soundPath } : {}),
   }
@@ -92,8 +88,7 @@ export async function createOpenCodePlugin(ctx: OpenCodePluginInput): Promise<Op
 
   async function handleNotification(
     sessionID: string,
-    eventType: OpenCodeEventType,
-    message?: string
+    eventType: OpenCodeEventType
   ) {
     if (notifiedSessions.has(sessionID)) return
 
@@ -109,7 +104,6 @@ export async function createOpenCodePlugin(ctx: OpenCodePluginInput): Promise<Op
 
     await notifier.trigger({
       sound: soundType,
-      message: message ?? notifierConfig.message,
     })
   }
 
@@ -136,15 +130,13 @@ export async function createOpenCodePlugin(ctx: OpenCodePluginInput): Promise<Op
         if (event.type === "session.error") {
           const sessionID = props?.sessionID as string | undefined
           if (!sessionID) return
-          const errorMessage = props?.error as string | undefined
-          await handleNotification(sessionID, "session.error", errorMessage)
+          await handleNotification(sessionID, "session.error")
         }
 
         if (event.type === "session.progress") {
           const sessionID = props?.sessionID as string | undefined
           if (!sessionID) return
-          const status = props?.status as string | undefined
-          await handleNotification(sessionID, "session.progress", status)
+          await handleNotification(sessionID, "session.progress")
         }
       } catch {}
     },

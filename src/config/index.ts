@@ -25,10 +25,6 @@ export const EventConfigSchema = z.union([
 ])
 
 export const EchoConfigSchema = z.object({
-  title: z.string().optional(),
-  message: z.string().optional(),
-  subtitle: z.string().optional(),
-  open: z.string().optional(),
   sound: z.union([z.boolean(), SoundTypeSchema]).optional(),
   soundPath: z.string().optional(),
   haptic: z.union([z.boolean(), HapticTypeSchema]).optional(),

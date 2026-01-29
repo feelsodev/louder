@@ -33,11 +33,8 @@ export async function handleClaudeHook(input: ClaudeHookInput): Promise<void> {
   )
 
   const notifierConfig = {
-    title: config.title ?? "Louder",
-    message: config.message ?? "Claude Code is ready",
-    subtitle: config.subtitle,
-    open: config.open,
     sound: soundType ?? false,
+    haptic: config.haptic,
     delay: 0,
     ...(config.soundPath ? { soundPath: config.soundPath } : {}),
   }

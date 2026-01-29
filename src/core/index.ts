@@ -1,16 +1,8 @@
 export {
   createNotifier,
-  sendTaskCompleteNotification,
-  sendErrorNotification,
-  sendProgressNotification,
   type NotifierConfig,
   type Notifier,
 } from "./notifier"
-
-export {
-  sendNotification,
-  type NotificationOptions,
-} from "./notification"
 
 export {
   playSound,
