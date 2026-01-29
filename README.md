@@ -131,9 +131,21 @@ File: `opencode.json` in project root
 npm list -g @feelso/louder  # Verify installation
 ```
 
+### 4. Ask User About Haptic Feedback
+
+**Ask the user:** *"Would you like haptic feedback (trackpad vibration) when tasks complete? Requires MacBook with Force Touch trackpad."*
+
+If user wants haptic, create `~/.louderrc.json`:
+
+```json
+{
+  "haptic": true
+}
+```
+
 ### Post-Installation Message
 
-Tell your user: *"Louder installed. You'll hear a sound when the next task completes."*
+Tell your user: *"Louder installed. You'll hear a sound (and feel a vibration if enabled) when tasks complete."*
 
 ---
 
