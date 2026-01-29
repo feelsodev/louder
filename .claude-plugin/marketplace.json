@@ -1,0 +1,24 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "louder",
+  "description": "Sound and haptic feedback when AI tasks complete",
+  "owner": {
+    "name": "feelso",
+    "url": "https://github.com/feelsodev"
+  },
+  "plugins": [
+    {
+      "name": "louder",
+      "description": "Your AI learned to shout. Sound + haptic feedback when tasks complete.",
+      "version": "0.1.4",
+      "author": {
+        "name": "feelso",
+        "url": "https://github.com/feelsodev"
+      },
+      "source": "./",
+      "category": "productivity",
+      "homepage": "https://github.com/feelsodev/louder",
+      "keywords": ["sound", "haptic", "notification", "macos", "trackpad", "force-touch"]
+    }
+  ]
+}
