@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 
-import { execFile } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { promisify } from "node:util";
 import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const execFileAsync = promisify(execFile);
 
@@ -56,32 +58,132 @@ async function playSound(soundType, soundPath) {
   } catch {}
 }
 
-let hapticInstance = null;
+const ACTUATION_STRONG = 6;
+const ACTUATION_WEAK = 3;
 
-async function getHapticInstance() {
-  if (hapticInstance) return hapticInstance;
-  
-  try {
-    const module = await import("haptic-feedback-swift");
-    hapticInstance = new module.HapticFeedback();
-    return hapticInstance;
-  } catch {
-    return null;
-  }
+const HAPTIC_ACTUATION_MAP = {
+  success: ACTUATION_STRONG,
+  error: ACTUATION_WEAK,
+};
+
+const DEFAULT_INTENSITY = {
+  success: 1.0,
+  error: 0.6,
+};
+
+let hapticEngine = null;
+let enginePromise = null;
+
+function getHapticEnginePath() {
+  const currentDir = dirname(fileURLToPath(import.meta.url));
+  return join(currentDir, "..", "native", "HapticEngine");
 }
 
-async function playHaptic(hapticType) {
-  if (!hapticType || hapticType === false) return;
+function resetEngine() {
+  hapticEngine = null;
+  enginePromise = null;
+}
+
+function getHapticEngine() {
+  if (hapticEngine) return Promise.resolve(hapticEngine);
+  if (enginePromise) return enginePromise;
   
+  enginePromise = new Promise((resolve) => {
+    const binaryPath = getHapticEnginePath();
+    if (!existsSync(binaryPath)) {
+      resetEngine();
+      resolve(null);
+      return;
+    }
+    
+    const proc = spawn(binaryPath, [], {
+      stdio: ["pipe", "ignore", "ignore"],
+    });
+    
+    let resolved = false;
+    
+    proc.once("spawn", () => {
+      if (resolved) return;
+      resolved = true;
+      
+      proc.stdin?.on("error", () => {});
+      
+      hapticEngine = {
+        process: proc,
+        write: (command) => {
+          if (!proc.stdin || proc.stdin.destroyed) return false;
+          try {
+            proc.stdin.write(command + "\n");
+            return true;
+          } catch {
+            return false;
+          }
+        },
+      };
+      
+      resolve(hapticEngine);
+    });
+    
+    proc.once("error", () => {
+      resetEngine();
+      if (!resolved) {
+        resolved = true;
+        resolve(null);
+      }
+    });
+    
+    proc.once("exit", () => {
+      resetEngine();
+      if (!resolved) {
+        resolved = true;
+        resolve(null);
+      }
+    });
+  });
+  
+  return enginePromise;
+}
+
+function parseHapticConfig(hapticConfig) {
+  if (!hapticConfig || hapticConfig === false) {
+    return null;
+  }
+  
+  if (hapticConfig === true) {
+    return { type: "success", intensity: DEFAULT_INTENSITY.success };
+  }
+  
+  if (typeof hapticConfig === "string") {
+    return { type: hapticConfig, intensity: DEFAULT_INTENSITY[hapticConfig] || 1.0 };
+  }
+  
+  if (typeof hapticConfig === "object") {
+    const type = hapticConfig.type || "success";
+    const intensity = hapticConfig.intensity ?? DEFAULT_INTENSITY[type] ?? 1.0;
+    return { type, intensity };
+  }
+  
+  return null;
+}
+
+async function playHaptic(hapticConfig) {
   if (process.platform !== "darwin") return;
   
-  const instance = await getHapticInstance();
-  if (!instance) return;
+  const parsed = parseHapticConfig(hapticConfig);
+  if (!parsed) return;
   
-  const pattern = hapticType === "error" ? "generic" : "levelChange";
-  try {
-    instance.trigger(pattern);
-  } catch {}
+  const engine = await getHapticEngine();
+  if (!engine) return;
+  
+  const actuationID = HAPTIC_ACTUATION_MAP[parsed.type] || ACTUATION_STRONG;
+  const rawIntensity = parsed.intensity;
+  const intensity = Number.isFinite(rawIntensity) ? Math.max(0, Math.min(2, rawIntensity)) : 1.0;
+  const command = `${actuationID},${intensity}`;
+  
+  const success = engine.write(command);
+  if (!success) {
+    resetEngine();
+  }
 }
 
 const EVENT_DEFAULTS = {
@@ -114,8 +216,7 @@ async function handleHook(input) {
   }
   
   if (config.haptic) {
-    const hapticType = config.haptic === true ? "success" : config.haptic;
-    await playHaptic(hapticType);
+    await playHaptic(config.haptic);
   }
 }
 

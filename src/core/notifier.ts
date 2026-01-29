@@ -1,11 +1,28 @@
 import { playSound, resolveSoundType, type SoundType } from "./sound"
-import { playHaptic, resolveHapticType, type HapticType } from "./haptic"
+import { playHaptic, type HapticType } from "./haptic"
 import { detectPlatform, type Platform } from "./platform"
+
+export interface HapticConfigObject {
+  type?: HapticType
+  intensity?: number
+}
+
+function resolveHapticConfig(
+  value: boolean | HapticType | HapticConfigObject | undefined
+): { hapticType: HapticType; intensity?: number } | null {
+  if (value === false) return null
+  if (value === undefined || value === true) return { hapticType: "success" }
+  if (typeof value === "string") return { hapticType: value }
+  if (typeof value === "object") {
+    return { hapticType: value.type ?? "success", intensity: value.intensity }
+  }
+  return null
+}
 
 export interface NotifierConfig {
   sound?: boolean | SoundType
   soundPath?: string
-  haptic?: boolean | HapticType
+  haptic?: boolean | HapticType | HapticConfigObject
   delay?: number
 }
 
@@ -47,9 +64,9 @@ export function createNotifier(config: NotifierConfig = {}): Notifier {
       await playSound(soundOptions)
     }
 
-    const hapticType = resolveHapticType(finalConfig.haptic, "success")
-    if (hapticType) {
-      await playHaptic({ hapticType, platform })
+    const hapticOptions = resolveHapticConfig(finalConfig.haptic)
+    if (hapticOptions) {
+      await playHaptic({ ...hapticOptions, platform })
     }
   }
 

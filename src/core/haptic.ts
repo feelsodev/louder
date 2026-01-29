@@ -1,3 +1,7 @@
+import { spawn, type ChildProcess } from "child_process"
+import { dirname, join } from "path"
+import { fileURLToPath } from "url"
+import { existsSync } from "fs"
 import { detectPlatform, type Platform } from "./platform"
 
 const DEBUG = process.env.DEBUG === "louder" || process.env.DEBUG === "*"
@@ -14,58 +18,128 @@ type InternalHapticType = HapticType | "silent"
 
 export interface HapticOptions {
   hapticType?: HapticType
+  intensity?: number
   platform?: Platform
 }
 
 interface InternalHapticOptions {
   hapticType?: InternalHapticType
+  intensity?: number
   platform?: Platform
 }
 
-type HapticPattern = "levelChange" | "generic" | "alignment"
+const ACTUATION_STRONG = 6
+const ACTUATION_WEAK = 3
 
-const HAPTIC_PATTERN_MAP: Record<HapticType, HapticPattern> = {
-  success: "levelChange",
-  error: "generic",
+const HAPTIC_ACTUATION_MAP: Record<HapticType, number> = {
+  success: ACTUATION_STRONG,
+  error: ACTUATION_WEAK,
 }
 
-interface HapticFeedbackInstance {
-  trigger: (pattern?: HapticPattern) => void
+const DEFAULT_INTENSITY: Record<HapticType, number> = {
+  success: 1.0,
+  error: 0.6,
 }
 
-let hapticFeedbackInstance: HapticFeedbackInstance | null = null
-let instancePromise: Promise<HapticFeedbackInstance | null> | null = null
+interface HapticEngineProcess {
+  process: ChildProcess
+  write: (command: string) => boolean
+}
 
-async function getHapticFeedbackInstance(): Promise<HapticFeedbackInstance | null> {
-  if (hapticFeedbackInstance) {
-    return hapticFeedbackInstance
+let hapticEngine: HapticEngineProcess | null = null
+let enginePromise: Promise<HapticEngineProcess | null> | null = null
+
+function getNativeBinaryPath(): string {
+  const currentDir = dirname(fileURLToPath(import.meta.url))
+  return join(currentDir, "..", "..", "native", "HapticEngine")
+}
+
+function resetEngine(): void {
+  hapticEngine = null
+  enginePromise = null
+}
+
+async function getHapticEngine(): Promise<HapticEngineProcess | null> {
+  if (hapticEngine) {
+    return hapticEngine
   }
 
-  if (instancePromise) {
-    return instancePromise
+  if (enginePromise) {
+    return enginePromise
   }
 
-  instancePromise = (async () => {
-    try {
-      const module = await import("haptic-feedback-swift")
-      const HapticFeedback = module.HapticFeedback as new () => HapticFeedbackInstance
-      hapticFeedbackInstance = new HapticFeedback()
-      debug("haptic-feedback-swift loaded successfully")
-      return hapticFeedbackInstance
-    } catch (error) {
-      debug("haptic-feedback-swift not available", { error })
-      return null
+  enginePromise = new Promise((resolve) => {
+    const binaryPath = getNativeBinaryPath()
+    
+    if (!existsSync(binaryPath)) {
+      debug("haptic binary not found", { binaryPath })
+      resetEngine()
+      resolve(null)
+      return
     }
-  })()
 
-  return instancePromise
+    debug("spawning haptic engine", { binaryPath })
+
+    const proc = spawn(binaryPath, [], {
+      stdio: ["pipe", "ignore", DEBUG ? "inherit" : "ignore"],
+    })
+
+    let resolved = false
+
+    proc.once("spawn", () => {
+      if (resolved) return
+      resolved = true
+
+      proc.stdin?.on("error", (err) => {
+        debug("stdin error", { error: err.message })
+      })
+
+      hapticEngine = {
+        process: proc,
+        write: (command: string): boolean => {
+          if (!proc.stdin || proc.stdin.destroyed) {
+            return false
+          }
+          try {
+            proc.stdin.write(command + "\n")
+            return true
+          } catch {
+            return false
+          }
+        },
+      }
+
+      debug("haptic engine started", { pid: proc.pid })
+      resolve(hapticEngine)
+    })
+
+    proc.once("error", (err) => {
+      debug("haptic engine error", { error: err.message })
+      resetEngine()
+      if (!resolved) {
+        resolved = true
+        resolve(null)
+      }
+    })
+
+    proc.once("exit", (code) => {
+      debug("haptic engine exited", { code })
+      resetEngine()
+      if (!resolved) {
+        resolved = true
+        resolve(null)
+      }
+    })
+  })
+
+  return enginePromise
 }
 
 export async function playHaptic(options: InternalHapticOptions = {}): Promise<boolean> {
   const currentPlatform = options.platform ?? detectPlatform()
   const hapticType = options.hapticType ?? "success"
 
-  debug("playHaptic called", { hapticType, platform: currentPlatform })
+  debug("playHaptic called", { hapticType, intensity: options.intensity, platform: currentPlatform })
 
   if (hapticType === "silent") {
     debug("haptic type is silent, skipping")
@@ -78,19 +152,31 @@ export async function playHaptic(options: InternalHapticOptions = {}): Promise<b
   }
 
   try {
-    const instance = await getHapticFeedbackInstance()
-    if (!instance) {
-      debug("haptic instance not available")
+    const engine = await getHapticEngine()
+    if (!engine) {
+      debug("haptic engine not available")
       return false
     }
 
-    const pattern = HAPTIC_PATTERN_MAP[hapticType]
-    debug("triggering haptic", { pattern })
-    instance.trigger(pattern)
+    const actuationID = HAPTIC_ACTUATION_MAP[hapticType]
+    const rawIntensity = options.intensity ?? DEFAULT_INTENSITY[hapticType]
+    const intensity = Number.isFinite(rawIntensity) ? Math.max(0, Math.min(2, rawIntensity)) : 1.0
+    const command = `${actuationID},${intensity}`
+
+    debug("triggering haptic", { actuationID, intensity, command })
+    const success = engine.write(command)
+    
+    if (!success) {
+      debug("failed to write to haptic engine, resetting")
+      resetEngine()
+      return false
+    }
+    
     debug("haptic triggered successfully")
     return true
   } catch (error) {
     debug("failed to trigger haptic", { error })
+    resetEngine()
     return false
   }
 }

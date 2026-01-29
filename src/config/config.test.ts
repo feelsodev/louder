@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest"
-import { EchoConfigSchema, SoundTypeSchema, HapticTypeSchema } from "./index"
+import { EchoConfigSchema, SoundTypeSchema, HapticTypeSchema, HapticConfigSchema } from "./index"
 
 describe("EchoConfigSchema", () => {
   test("should validate empty config", () => {
@@ -110,5 +110,53 @@ describe("HapticTypeSchema", () => {
   test("should reject invalid haptic type", () => {
     const result = HapticTypeSchema.safeParse("invalid")
     expect(result.success).toBe(false)
+  })
+})
+
+describe("HapticConfigSchema", () => {
+  test("should validate haptic config with type and intensity", () => {
+    const result = HapticConfigSchema.safeParse({
+      type: "success",
+      intensity: 1.5,
+    })
+    expect(result.success).toBe(true)
+  })
+
+  test("should validate haptic config with only type", () => {
+    const result = HapticConfigSchema.safeParse({
+      type: "error",
+    })
+    expect(result.success).toBe(true)
+  })
+
+  test("should validate haptic config with only intensity", () => {
+    const result = HapticConfigSchema.safeParse({
+      intensity: 0.5,
+    })
+    expect(result.success).toBe(true)
+  })
+
+  test("should reject intensity above 2", () => {
+    const result = HapticConfigSchema.safeParse({
+      intensity: 2.5,
+    })
+    expect(result.success).toBe(false)
+  })
+
+  test("should reject negative intensity", () => {
+    const result = HapticConfigSchema.safeParse({
+      intensity: -0.5,
+    })
+    expect(result.success).toBe(false)
+  })
+
+  test("should validate in EchoConfigSchema", () => {
+    const result = EchoConfigSchema.safeParse({
+      haptic: {
+        type: "success",
+        intensity: 1.8,
+      },
+    })
+    expect(result.success).toBe(true)
   })
 })
