@@ -43,40 +43,26 @@ You: "Nice, let's keep going!"
 
 ## 👤 For Humans
 
-### Step 1: Install
-
-```bash
-npm install -g @feelso/louder
-```
-
-### Step 2: Configure Your AI Tool
+### Installation
 
 #### Claude Code
 
-Add to `~/.claude/settings.json`:
-
-```json
-{
-  "hooks": {
-    "Stop": [{ "hooks": [{ "type": "command", "command": "npx @feelso/louder", "timeout": 5000 }] }],
-    "Notification": [{ "matcher": ".*", "hooks": [{ "type": "command", "command": "npx @feelso/louder", "timeout": 5000 }] }]
-  }
-}
 ```
-
-> Merge into existing settings if you have other configurations.
+/plugin marketplace add feelsodev/louder
+/plugin install louder
+```
 
 #### OpenCode
 
-Add to `opencode.json` in project root:
+Add to your `opencode.jsonc`:
 
 ```json
 {
-  "plugin": ["@feelso/louder"]
+  "plugins": ["louder@0.1.4"]
 }
 ```
 
-### Step 3: Done!
+### Done!
 
 Give your AI a task. When it finishes, you'll hear it. 🔊
 
@@ -94,44 +80,22 @@ Give your AI a task. When it finishes, you'll hear it. 🔊
 
 ### Installation Protocol
 
-**1. Install package globally:**
+**Claude Code:**
 
-```bash
-npm install -g @feelso/louder
+```
+/plugin marketplace add feelsodev/louder
+/plugin install louder
 ```
 
-**2. Configure Claude Code hooks:**
-
-File: `~/.claude/settings.json`
-
-If file exists, merge `hooks` section. If not, create with this content:
+**OpenCode:** Add to `opencode.jsonc`:
 
 ```json
 {
-  "hooks": {
-    "Stop": [{ "hooks": [{ "type": "command", "command": "npx @feelso/louder", "timeout": 5000 }] }],
-    "Notification": [{ "matcher": ".*", "hooks": [{ "type": "command", "command": "npx @feelso/louder", "timeout": 5000 }] }]
-  }
+  "plugins": ["louder@0.1.4"]
 }
 ```
 
-**3. Configure OpenCode (if applicable):**
-
-File: `opencode.json` in project root
-
-```json
-{
-  "plugin": ["@feelso/louder"]
-}
-```
-
-### Verification
-
-```bash
-npm list -g @feelso/louder  # Verify installation
-```
-
-### 4. Ask User About Haptic Feedback
+### Ask User About Haptic Feedback
 
 **Ask the user:** *"Would you like haptic feedback (trackpad vibration) when tasks complete? Requires MacBook with Force Touch trackpad."*
 

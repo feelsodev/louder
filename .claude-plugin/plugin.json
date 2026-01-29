@@ -1,6 +1,14 @@
 {
-  "name": "@feelso/louder",
-  "version": "0.1.0",
-  "description": "OS notifications for AI coding assistants",
+  "name": "louder",
+  "version": "0.1.4",
+  "description": "Sound and haptic feedback when AI tasks complete. Your AI learned to shout.",
+  "author": {
+    "name": "feelso",
+    "url": "https://github.com/feelsodev"
+  },
+  "license": "MIT",
+  "keywords": ["sound", "haptic", "notification", "macos", "trackpad", "force-touch"],
+  "homepage": "https://github.com/feelsodev/louder",
+  "repository": "https://github.com/feelsodev/louder",
   "hooks": "../hooks/hooks.json"
 }
