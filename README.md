@@ -1,6 +1,8 @@
 <div align="center">
 
-# 🔔 @feelso/louder
+<img src="resources/louder_image.png" alt="Louder" width="100%" />
+
+# louder
 
 [![npm version](https://img.shields.io/npm/v/@feelso/louder.svg)](https://www.npmjs.com/package/@feelso/louder)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -54,13 +56,29 @@ You: "Nice, let's keep going!"
 
 #### OpenCode
 
-Add to your `opencode.jsonc`:
+**Option 1: Local Plugin (Recommended for Haptic)**
+
+Download the plugin file to your plugins directory:
+
+```bash
+mkdir -p ~/.config/opencode/plugins
+curl -o ~/.config/opencode/plugins/louder.js \
+  https://raw.githubusercontent.com/feelsodev/louder/main/opencode-plugin/louder.js
+```
+
+Then restart OpenCode.
+
+**Option 2: npm Package**
+
+Add to your `opencode.json`:
 
 ```json
 {
-  "plugins": ["louder@0.1.8"]
+  "plugin": ["@feelso/louder"]
 }
 ```
+
+> **Note:** Haptic feedback requires the local plugin or npm version 0.1.9+ with native binary rebuild.
 
 ### Done!
 
@@ -69,8 +87,10 @@ Give your AI a task. When it finishes, you'll hear it. 🔊
 ### Troubleshooting
 
 - **No sound?** Check macOS System Settings > Sound
-- **No haptic?** Requires MacBook with Force Touch trackpad + finger on trackpad
-- **Other platforms?** macOS only (uses `afplay` for sound)
+- **No haptic?** Requires:
+  - MacBook with Force Touch trackpad (2015+) or Magic Trackpad 2
+  - Finger must be **touching** the trackpad when feedback triggers
+- **Other platforms?** macOS only (uses `afplay` for sound, Force Touch for haptic)
 
 ---
 
@@ -87,13 +107,15 @@ Give your AI a task. When it finishes, you'll hear it. 🔊
 /plugin install louder@louder
 ```
 
-**OpenCode:** Add to `opencode.jsonc`:
+**OpenCode:** Download local plugin (recommended for haptic):
 
-```json
-{
-  "plugins": ["louder@0.1.8"]
-}
+```bash
+mkdir -p ~/.config/opencode/plugins
+curl -o ~/.config/opencode/plugins/louder.js \
+  https://raw.githubusercontent.com/feelsodev/louder/main/opencode-plugin/louder.js
 ```
+
+Then restart OpenCode.
 
 ### Ask User About Haptic Feedback
 
@@ -194,8 +216,8 @@ Create `.louderrc.json` in project root or `~/.louderrc.json` for global config.
 
 | Type | Pattern | Default Intensity | Use For |
 |------|---------|-------------------|---------|
-| `success` | Strong tap | 1.0 | Task complete |
-| `error` | Subtle tap | 0.6 | Errors |
+| `success` | Strong tap | 2.0 (max) | Task complete |
+| `error` | Strong tap | 1.5 | Errors |
 
 ### Haptic Intensity
 
