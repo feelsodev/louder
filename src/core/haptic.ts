@@ -37,8 +37,8 @@ const HAPTIC_ACTUATION_MAP: Record<HapticType, number> = {
 }
 
 const DEFAULT_INTENSITY: Record<HapticType, number> = {
-  success: 1.0,
-  error: 0.6,
+  success: 2.0,
+  error: 1.5,
 }
 
 interface HapticEngineProcess {

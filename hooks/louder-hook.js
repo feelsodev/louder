@@ -67,8 +67,8 @@ const HAPTIC_ACTUATION_MAP = {
 };
 
 const DEFAULT_INTENSITY = {
-  success: 1.0,
-  error: 0.6,
+  success: 2.0,
+  error: 1.5,
 };
 
 let hapticEngine = null;
@@ -233,9 +233,22 @@ async function main() {
   try {
     const input = await readStdin();
     const hookInput = JSON.parse(input);
+    
+    // Debug log to file
+    const fs = await import("node:fs/promises");
+    const debugLog = `${homedir()}/.louder-debug.log`;
+    const timestamp = new Date().toISOString();
+    await fs.appendFile(debugLog, `[${timestamp}] Event: ${hookInput.hook_event_name}\n`);
+    
     await handleHook(hookInput);
+    
+    await fs.appendFile(debugLog, `[${timestamp}] Handled\n`);
     process.exit(0);
-  } catch {
+  } catch (e) {
+    // Debug error
+    const fs = await import("node:fs/promises");
+    const debugLog = `${homedir()}/.louder-debug.log`;
+    await fs.appendFile(debugLog, `[${new Date().toISOString()}] Error: ${e.message}\n`).catch(() => {});
     process.exit(0);
   }
 }
