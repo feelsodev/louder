@@ -37,3 +37,4 @@ bun.lockb
 .claude/
 .omc/
 opencode.json
+dist-plugin/
