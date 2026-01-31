@@ -10,7 +10,7 @@
     {
       "name": "louder",
       "description": "Your AI learned to shout. Sound + haptic feedback when tasks complete.",
-      "version": "0.1.8",
+      "version": "0.1.10",
       "author": {
         "name": "feelso",
         "url": "https://github.com/feelsodev"

@@ -1,6 +1,6 @@
 {
   "name": "@feelso/louder",
-  "version": "0.1.8",
+  "version": "0.1.10",
   "description": "AI coding assistant notification plugin for Claude Code and OpenCode",
   "type": "module",
   "main": "./dist/index.js",
@@ -35,7 +35,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "typecheck": "tsc --noEmit",
-    "postinstall": "node -e \"process.platform === 'darwin' && require('child_process').execSync('./native/build.sh', {stdio: 'inherit'})\" || true",
+    "postinstall": "node -e \"if(process.platform==='darwin'&&!require('fs').existsSync('./native/HapticEngine')){try{require('child_process').execSync('./native/build.sh',{stdio:'inherit'})}catch(e){}}\" || true",
     "prepublishOnly": "npm run build"
   },
   "keywords": [
