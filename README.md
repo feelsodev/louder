@@ -58,12 +58,15 @@ You: "Nice, let's keep going!"
 
 **Option 1: Local Plugin (Recommended for Haptic)**
 
-Download the plugin file to your plugins directory:
+Download the plugin file and native binary:
 
 ```bash
-mkdir -p ~/.config/opencode/plugins
+mkdir -p ~/.config/opencode/plugins ~/.config/opencode/native
 curl -o ~/.config/opencode/plugins/louder.js \
   https://raw.githubusercontent.com/feelsodev/louder/main/opencode-plugin/louder.js
+curl -L -o ~/.config/opencode/native/HapticEngine \
+  https://github.com/feelsodev/louder/releases/latest/download/HapticEngine
+chmod +x ~/.config/opencode/native/HapticEngine
 ```
 
 Then restart OpenCode.
@@ -107,12 +110,15 @@ Give your AI a task. When it finishes, you'll hear it. 🔊
 /plugin install louder@louder
 ```
 
-**OpenCode:** Download local plugin (recommended for haptic):
+**OpenCode:** Download local plugin and native binary (recommended for haptic):
 
 ```bash
-mkdir -p ~/.config/opencode/plugins
+mkdir -p ~/.config/opencode/plugins ~/.config/opencode/native
 curl -o ~/.config/opencode/plugins/louder.js \
   https://raw.githubusercontent.com/feelsodev/louder/main/opencode-plugin/louder.js
+curl -L -o ~/.config/opencode/native/HapticEngine \
+  https://github.com/feelsodev/louder/releases/latest/download/HapticEngine
+chmod +x ~/.config/opencode/native/HapticEngine
 ```
 
 Then restart OpenCode.

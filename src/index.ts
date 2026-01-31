@@ -38,3 +38,5 @@ export {
 
 export * as claude from "./claude"
 export * as opencode from "./opencode"
+
+export { createOpenCodePlugin as default } from "./opencode"

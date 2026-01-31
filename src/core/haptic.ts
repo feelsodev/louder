@@ -1,4 +1,4 @@
-import { spawn, type ChildProcess } from "child_process"
+import { createRequire } from "node:module"
 import { dirname, join } from "path"
 import { fileURLToPath } from "url"
 import { existsSync } from "fs"
@@ -28,111 +28,44 @@ interface InternalHapticOptions {
   platform?: Platform
 }
 
-const ACTUATION_STRONG = 15
-const ACTUATION_WEAK = 6
-
-const HAPTIC_ACTUATION_MAP: Record<HapticType, number> = {
-  success: ACTUATION_STRONG,
-  error: ACTUATION_WEAK,
+interface NativeModule {
+  actuate: (actuation: number, intensity: number) => void
+  isSupported?: () => boolean
 }
 
-const DEFAULT_INTENSITY: Record<HapticType, number> = {
-  success: 2.0,
-  error: 1.5,
-}
+let nativeModule: NativeModule | null = null
+let moduleLoaded = false
 
-interface HapticEngineProcess {
-  process: ChildProcess
-  write: (command: string) => boolean
-}
+function loadNativeModule(): NativeModule | null {
+  if (moduleLoaded) return nativeModule
+  moduleLoaded = true
 
-let hapticEngine: HapticEngineProcess | null = null
-let enginePromise: Promise<HapticEngineProcess | null> | null = null
+  if (process.platform !== "darwin") {
+    debug("not darwin, skipping native module load")
+    return null
+  }
 
-function getNativeBinaryPath(): string {
   const currentDir = dirname(fileURLToPath(import.meta.url))
-  return join(currentDir, "..", "..", "native", "HapticEngine")
-}
+  const modulePath = join(currentDir, "..", "native", "vibe-haptic-native.node")
 
-function resetEngine(): void {
-  hapticEngine = null
-  enginePromise = null
-}
-
-async function getHapticEngine(): Promise<HapticEngineProcess | null> {
-  if (hapticEngine) {
-    return hapticEngine
+  if (!existsSync(modulePath)) {
+    debug("native module not found", { modulePath })
+    return null
   }
 
-  if (enginePromise) {
-    return enginePromise
+  try {
+    const require = createRequire(import.meta.url)
+    nativeModule = require(modulePath) as NativeModule
+    debug("native module loaded", { modulePath })
+    return nativeModule
+  } catch (error) {
+    debug("failed to load native module", { error })
+    return null
   }
+}
 
-  enginePromise = new Promise((resolve) => {
-    const binaryPath = getNativeBinaryPath()
-    
-    if (!existsSync(binaryPath)) {
-      debug("haptic binary not found", { binaryPath })
-      resetEngine()
-      resolve(null)
-      return
-    }
-
-    debug("spawning haptic engine", { binaryPath })
-
-    const proc = spawn(binaryPath, [], {
-      stdio: ["pipe", "ignore", DEBUG ? "inherit" : "ignore"],
-    })
-
-    let resolved = false
-
-    proc.once("spawn", () => {
-      if (resolved) return
-      resolved = true
-
-      proc.stdin?.on("error", (err) => {
-        debug("stdin error", { error: err.message })
-      })
-
-      hapticEngine = {
-        process: proc,
-        write: (command: string): boolean => {
-          if (!proc.stdin || proc.stdin.destroyed) {
-            return false
-          }
-          try {
-            proc.stdin.write(command + "\n")
-            return true
-          } catch {
-            return false
-          }
-        },
-      }
-
-      debug("haptic engine started", { pid: proc.pid })
-      resolve(hapticEngine)
-    })
-
-    proc.once("error", (err) => {
-      debug("haptic engine error", { error: err.message })
-      resetEngine()
-      if (!resolved) {
-        resolved = true
-        resolve(null)
-      }
-    })
-
-    proc.once("exit", (code) => {
-      debug("haptic engine exited", { code })
-      resetEngine()
-      if (!resolved) {
-        resolved = true
-        resolve(null)
-      }
-    })
-  })
-
-  return enginePromise
+function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
 
 export async function playHaptic(options: InternalHapticOptions = {}): Promise<boolean> {
@@ -152,31 +85,32 @@ export async function playHaptic(options: InternalHapticOptions = {}): Promise<b
   }
 
   try {
-    const engine = await getHapticEngine()
-    if (!engine) {
-      debug("haptic engine not available")
+    const native = loadNativeModule()
+    if (!native) {
+      debug("native module not available")
       return false
     }
 
-    const actuationID = HAPTIC_ACTUATION_MAP[hapticType]
-    const rawIntensity = options.intensity ?? DEFAULT_INTENSITY[hapticType]
-    const intensity = Number.isFinite(rawIntensity) ? Math.max(0, Math.min(2, rawIntensity)) : 1.0
-    const command = `${actuationID},${intensity}`
-
-    debug("triggering haptic", { actuationID, intensity, command })
-    const success = engine.write(command)
+    debug("triggering haptic pattern", { hapticType })
     
-    if (!success) {
-      debug("failed to write to haptic engine, resetting")
-      resetEngine()
-      return false
+    if (hapticType === "success") {
+      native.actuate(6, 0.8)
+      await sleep(100)
+      native.actuate(3, 1.0)
+      await sleep(300)
+      native.actuate(6, 1.0)
+    } else {
+      native.actuate(6, 0.5)
+      await sleep(100)
+      native.actuate(6, 1.0)
+      await sleep(100)
+      native.actuate(6, 0.5)
     }
     
     debug("haptic triggered successfully")
     return true
   } catch (error) {
     debug("failed to trigger haptic", { error })
-    resetEngine()
     return false
   }
 }
