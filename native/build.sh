@@ -11,6 +11,8 @@ swiftc \
     -target arm64-apple-macosx12.0 \
     -framework IOKit \
     -framework CoreFoundation \
+    -F/System/Library/PrivateFrameworks \
+    -framework MultitouchSupport \
     -o HapticEngine-arm64 \
     HapticEngine.swift
 
@@ -19,6 +21,8 @@ swiftc \
     -target x86_64-apple-macosx12.0 \
     -framework IOKit \
     -framework CoreFoundation \
+    -F/System/Library/PrivateFrameworks \
+    -framework MultitouchSupport \
     -o HapticEngine-x64 \
     HapticEngine.swift
 
@@ -29,3 +33,4 @@ chmod +x HapticEngine
 
 echo "Build complete: $SCRIPT_DIR/HapticEngine (universal)"
 file HapticEngine
+otool -L HapticEngine | grep -i multitouch && echo "MultitouchSupport framework linked!"

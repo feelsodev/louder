@@ -1,40 +1,19 @@
 import Foundation
 import IOKit
 
-// MARK: - MultitouchSupport Framework FFI
+// MARK: - MultitouchSupport Framework (Direct Linking)
 
-typealias MTActuatorCreateFromDeviceID = @convention(c) (UInt64) -> OpaquePointer?
-typealias MTActuatorOpen = @convention(c) (OpaquePointer) -> Int32
-typealias MTActuatorClose = @convention(c) (OpaquePointer) -> Int32
-typealias MTActuatorActuate = @convention(c) (OpaquePointer, Int32, UInt32, Float, Float) -> Int32
+@_silgen_name("MTActuatorCreateFromDeviceID")
+func MTActuatorCreateFromDeviceID(_ deviceID: UInt64) -> OpaquePointer?
 
-var mtActuatorCreateFromDeviceID: MTActuatorCreateFromDeviceID?
-var mtActuatorOpen: MTActuatorOpen?
-var mtActuatorClose: MTActuatorClose?
-var mtActuatorActuate: MTActuatorActuate?
+@_silgen_name("MTActuatorOpen")
+func MTActuatorOpen(_ actuator: OpaquePointer) -> Int32
 
-func loadMultitouchFramework() -> Bool {
-    let frameworkPath = "/System/Library/PrivateFrameworks/MultitouchSupport.framework/MultitouchSupport"
-    
-    guard let handle = dlopen(frameworkPath, RTLD_NOW) else {
-        return false
-    }
-    
-    guard let createPtr = dlsym(handle, "MTActuatorCreateFromDeviceID"),
-          let openPtr = dlsym(handle, "MTActuatorOpen"),
-          let closePtr = dlsym(handle, "MTActuatorClose"),
-          let actuatePtr = dlsym(handle, "MTActuatorActuate") else {
-        dlclose(handle)
-        return false
-    }
-    
-    mtActuatorCreateFromDeviceID = unsafeBitCast(createPtr, to: MTActuatorCreateFromDeviceID.self)
-    mtActuatorOpen = unsafeBitCast(openPtr, to: MTActuatorOpen.self)
-    mtActuatorClose = unsafeBitCast(closePtr, to: MTActuatorClose.self)
-    mtActuatorActuate = unsafeBitCast(actuatePtr, to: MTActuatorActuate.self)
-    
-    return true
-}
+@_silgen_name("MTActuatorClose")
+func MTActuatorClose(_ actuator: OpaquePointer) -> Int32
+
+@_silgen_name("MTActuatorActuate")
+func MTActuatorActuate(_ actuator: OpaquePointer, _ actuationID: Int32, _ unknown1: UInt32, _ unknown2: Float, _ intensity: Float) -> Int32
 
 // MARK: - IOKit Device Discovery
 
@@ -94,59 +73,30 @@ func findTrackpadDeviceID() -> UInt64? {
 
 // MARK: - Haptic Feedback
 
-var cachedDeviceID: UInt64?
-var cachedActuator: OpaquePointer?
-
-func invalidateCache() {
-    cachedDeviceID = nil
-    cachedActuator = nil
-}
-
 /// Actuation IDs: 1=very weak, 3=weak, 4=medium, 5=medium-strong, 6=strong, 15=very strong
 let ACTUATION_STRONG: Int32 = 15
 let ACTUATION_WEAK: Int32 = 6
 
 func triggerHaptic(actuationID: Int32, intensity: Float) -> Bool {
-    guard let createFunc = mtActuatorCreateFromDeviceID,
-          let openFunc = mtActuatorOpen,
-          let closeFunc = mtActuatorClose,
-          let actuateFunc = mtActuatorActuate else {
+    guard let deviceID = findTrackpadDeviceID() else {
         return false
     }
     
-    if cachedDeviceID == nil {
-        cachedDeviceID = findTrackpadDeviceID()
-    }
-    
-    guard let deviceID = cachedDeviceID else {
+    guard let actuator = MTActuatorCreateFromDeviceID(deviceID) else {
         return false
     }
     
-    if cachedActuator == nil {
-        cachedActuator = createFunc(deviceID)
-    }
-    
-    guard let actuator = cachedActuator else {
-        invalidateCache()
-        return false
-    }
-    
-    let openResult = openFunc(actuator)
+    let openResult = MTActuatorOpen(actuator)
     if openResult != 0 {
-        invalidateCache()
+        _ = MTActuatorClose(actuator)
         return false
     }
     
     let clampedIntensity = max(0.0, min(2.0, intensity))
-    let actuateResult = actuateFunc(actuator, actuationID, 0, 0.0, clampedIntensity)
-    _ = closeFunc(actuator)
+    let actuateResult = MTActuatorActuate(actuator, actuationID, 0, 0.0, clampedIntensity)
+    _ = MTActuatorClose(actuator)
     
-    if actuateResult != 0 {
-        invalidateCache()
-        return false
-    }
-    
-    return true
+    return actuateResult == 0
 }
 
 // MARK: - Command Processing
@@ -158,7 +108,7 @@ func processCommand(_ input: String) {
     let parts = trimmed.split(separator: ",")
     
     var actuationID: Int32 = ACTUATION_STRONG
-    var intensity: Float = 1.0
+    var intensity: Float = 2.0  // Maximum intensity by default
     
     if parts.count >= 2 {
         actuationID = Int32(parts[0]) ?? ACTUATION_STRONG
@@ -180,11 +130,6 @@ func processCommand(_ input: String) {
 // MARK: - Main
 
 func main() {
-    guard loadMultitouchFramework() else {
-        fputs("ERROR: Failed to load MultitouchSupport.framework\n", stderr)
-        exit(1)
-    }
-    
     guard findTrackpadDeviceID() != nil else {
         fputs("ERROR: No supported trackpad found\n", stderr)
         exit(1)
