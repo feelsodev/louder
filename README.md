@@ -78,7 +78,7 @@ curl -o ~/.config/opencode/plugins/louder.js \
 
 Then restart OpenCode.
 
-> **Note:** Haptic feedback requires npm package installation.
+> **Note:** Local plugin only supports sound. For haptic feedback, use npm package.
 
 ### Done!
 
@@ -218,9 +218,10 @@ Create `.louderrc.json` in project root or `~/.louderrc.json` for global config.
 | `success` | Strong | Task complete |
 | `error` | Strong | Errors |
 
-### Config Formats
+### Config Location
 
-Also supports: `.louderrc.yaml`, `.louderrc.js`, `louder.config.js`, `package.json` (`"louder"` key)
+- **Global:** `~/.louderrc.json`
+- **Project:** `./.louderrc.json` (overrides global)
 
 ---
 
