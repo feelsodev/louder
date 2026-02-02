@@ -38,3 +38,4 @@ bun.lockb
 .omc/
 opencode.json
 dist-plugin/
+.sisyphus/
