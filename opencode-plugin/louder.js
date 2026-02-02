@@ -21,10 +21,12 @@ const SOUND_MAP = {
 }
 
 function findHapticBinary() {
+  // Prefer packaged binary first (security: avoid hijack from user-writable paths)
   const locations = [
+    join(dirname(fileURLToPath(import.meta.url)), "..", "native", "HapticEngine"),
+    join(dirname(fileURLToPath(import.meta.url)), "native", "HapticEngine"),
     join(homedir(), ".config/opencode/native/HapticEngine"),
     join(homedir(), ".local/share/louder/HapticEngine"),
-    join(dirname(fileURLToPath(import.meta.url)), "native/HapticEngine"),
   ]
   
   for (const loc of locations) {
@@ -35,11 +37,13 @@ function findHapticBinary() {
 
 let hapticEngine = null
 let hapticBinaryPath = null
+let enginePromise = null
 
 function getHapticEngine() {
   if (hapticEngine) return Promise.resolve(hapticEngine)
+  if (enginePromise) return enginePromise
   
-  return new Promise((resolve) => {
+  enginePromise = new Promise((resolve) => {
     if (!hapticBinaryPath) {
       hapticBinaryPath = findHapticBinary()
     }
@@ -67,11 +71,18 @@ function getHapticEngine() {
       resolve(hapticEngine)
     })
     
-    proc.once("error", () => resolve(null))
+    proc.once("error", () => {
+      hapticEngine = null
+      enginePromise = null
+      resolve(null)
+    })
     proc.once("exit", () => {
       hapticEngine = null
+      enginePromise = null
     })
   })
+  
+  return enginePromise
 }
 
 async function playSound(type = "success") {
@@ -126,7 +137,7 @@ export const louderPlugin = async (ctx) => {
       if (event.type === "session.error") {
         if (!sessionID || notifiedSessions.has(sessionID)) return
         trackSession(sessionID)
-        await notify("error", 1.5)
+        await notify("error", 2.0)
       }
     }
   }

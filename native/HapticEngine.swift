@@ -92,8 +92,9 @@ func triggerHaptic(actuationID: Int32, intensity: Float) -> Bool {
         return false
     }
     
+    let clampedActuationID = max(0, min(15, actuationID))
     let clampedIntensity = max(0.0, min(2.0, intensity))
-    let actuateResult = MTActuatorActuate(actuator, actuationID, 0, 0.0, clampedIntensity)
+    let actuateResult = MTActuatorActuate(actuator, clampedActuationID, 0, 0.0, clampedIntensity)
     _ = MTActuatorClose(actuator)
     
     return actuateResult == 0

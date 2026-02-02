@@ -63,12 +63,12 @@ const ACTUATION_WEAK = 6;
 
 const HAPTIC_ACTUATION_MAP = {
   success: ACTUATION_STRONG,
-  error: ACTUATION_WEAK,
+  error: ACTUATION_STRONG,
 };
 
 const DEFAULT_INTENSITY = {
   success: 2.0,
-  error: 1.5,
+  error: 2.0,
 };
 
 let hapticEngine = null;
@@ -234,21 +234,22 @@ async function main() {
     const input = await readStdin();
     const hookInput = JSON.parse(input);
     
-    // Debug log to file
-    const fs = await import("node:fs/promises");
-    const debugLog = `${homedir()}/.louder-debug.log`;
-    const timestamp = new Date().toISOString();
-    await fs.appendFile(debugLog, `[${timestamp}] Event: ${hookInput.hook_event_name}\n`);
+    if (process.env.DEBUG) {
+      const fs = await import("node:fs/promises");
+      const debugLog = `${homedir()}/.louder-debug.log`;
+      const timestamp = new Date().toISOString();
+      await fs.appendFile(debugLog, `[${timestamp}] Event: ${hookInput.hook_event_name}\n`).catch(() => {});
+    }
     
     await handleHook(hookInput);
-    
-    await fs.appendFile(debugLog, `[${timestamp}] Handled\n`);
     process.exit(0);
   } catch (e) {
-    // Debug error
-    const fs = await import("node:fs/promises");
-    const debugLog = `${homedir()}/.louder-debug.log`;
-    await fs.appendFile(debugLog, `[${new Date().toISOString()}] Error: ${e.message}\n`).catch(() => {});
+    if (process.env.DEBUG) {
+      const fs = await import("node:fs/promises");
+      const debugLog = `${homedir()}/.louder-debug.log`;
+      const errorMsg = e instanceof Error ? e.message : String(e);
+      await fs.appendFile(debugLog, `[${new Date().toISOString()}] Error: ${errorMsg}\n`).catch(() => {});
+    }
     process.exit(0);
   }
 }
