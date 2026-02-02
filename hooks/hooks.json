@@ -1,0 +1,13 @@
+{
+  "hooks": [
+    {
+      "matcher": "",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node ${PLUGIN_ROOT}/hooks/louder-hook.js"
+        }
+      ]
+    }
+  ]
+}
