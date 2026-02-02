@@ -56,22 +56,7 @@ You: "Nice, let's keep going!"
 
 #### OpenCode
 
-**Option 1: Local Plugin (Recommended for Haptic)**
-
-Download the plugin file and native binary:
-
-```bash
-mkdir -p ~/.config/opencode/plugins ~/.config/opencode/native
-curl -o ~/.config/opencode/plugins/louder.js \
-  https://raw.githubusercontent.com/feelsodev/louder/main/opencode-plugin/louder.js
-curl -L -o ~/.config/opencode/native/HapticEngine \
-  https://github.com/feelsodev/louder/releases/latest/download/HapticEngine
-chmod +x ~/.config/opencode/native/HapticEngine
-```
-
-Then restart OpenCode.
-
-**Option 2: npm Package**
+**Option 1: npm Package (Recommended)**
 
 Add to your `opencode.json`:
 
@@ -81,7 +66,19 @@ Add to your `opencode.json`:
 }
 ```
 
-> **Note:** Haptic feedback requires the local plugin or npm version 0.1.9+ with native binary rebuild.
+**Option 2: Local Plugin**
+
+Download the plugin file:
+
+```bash
+mkdir -p ~/.config/opencode/plugins
+curl -o ~/.config/opencode/plugins/louder.js \
+  https://raw.githubusercontent.com/feelsodev/louder/main/opencode-plugin/louder.js
+```
+
+Then restart OpenCode.
+
+> **Note:** Haptic feedback requires npm package installation.
 
 ### Done!
 
@@ -110,15 +107,12 @@ Give your AI a task. When it finishes, you'll hear it. 🔊
 /plugin install louder@louder
 ```
 
-**OpenCode:** Download local plugin and native binary (recommended for haptic):
+**OpenCode:** Add to `opencode.json`:
 
-```bash
-mkdir -p ~/.config/opencode/plugins ~/.config/opencode/native
-curl -o ~/.config/opencode/plugins/louder.js \
-  https://raw.githubusercontent.com/feelsodev/louder/main/opencode-plugin/louder.js
-curl -L -o ~/.config/opencode/native/HapticEngine \
-  https://github.com/feelsodev/louder/releases/latest/download/HapticEngine
-chmod +x ~/.config/opencode/native/HapticEngine
+```json
+{
+  "plugin": ["@feelso/louder"]
+}
 ```
 
 Then restart OpenCode.
@@ -201,7 +195,7 @@ Create `.louderrc.json` in project root or `~/.louderrc.json` for global config.
 |--------|------|---------|-------------|
 | `sound` | boolean \| string | true | Sound type or `false` to disable |
 | `soundPath` | string | - | Custom sound file path (.aiff) |
-| `haptic` | boolean \| string \| object | false | `true`, `"success"`, `"error"`, or `{ type, intensity }` |
+| `haptic` | boolean \| string | false | `true`, `"success"`, or `"error"` |
 | `delay` | number | 1500 | Delay in ms before feedback |
 | `events` | object | - | Per-event overrides |
 
@@ -220,30 +214,10 @@ Create `.louderrc.json` in project root or `~/.louderrc.json` for global config.
 
 ### Haptic Types
 
-| Type | Pattern | Default Intensity | Use For |
-|------|---------|-------------------|---------|
-| `success` | Strong tap | 2.0 (max) | Task complete |
-| `error` | Strong tap | 1.5 | Errors |
-
-### Haptic Intensity
-
-Control haptic feedback strength with `intensity` (0.0 - 2.0):
-
-```json
-{
-  "haptic": {
-    "type": "success",
-    "intensity": 1.5
-  }
-}
-```
-
-| Intensity | Feel |
-|-----------|------|
-| 0.0 - 0.5 | Very subtle |
-| 0.5 - 1.0 | Normal |
-| 1.0 - 1.5 | Strong |
-| 1.5 - 2.0 | Maximum |
+| Type | Pattern | Use For |
+|------|---------|---------|
+| `success` | Triple tap (strong) | Task complete |
+| `error` | Triple tap (medium) | Errors |
 
 ### Config Formats
 
@@ -265,17 +239,7 @@ Also supports: `.louderrc.yaml`, `.louderrc.js`, `louder.config.js`, `package.js
 
 **Full Feedback** - Sound + Haptic:
 ```json
-{ "sound": "success", "haptic": "success" }
-```
-
-**Strong Haptic** - Maximum intensity:
-```json
-{ "haptic": { "type": "success", "intensity": 2.0 } }
-```
-
-**Subtle Haptic** - Gentle feedback:
-```json
-{ "haptic": { "type": "success", "intensity": 0.3 } }
+{ "sound": "success", "haptic": true }
 ```
 
 **Custom Sound** - Use your own sound file:
