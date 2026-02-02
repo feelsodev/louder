@@ -181,7 +181,6 @@ Create `.louderrc.json` in project root or `~/.louderrc.json` for global config.
 {
   "sound": "success",
   "haptic": true,
-  "delay": 1500,
   "events": {
     "stop": "success",
     "error": "error"
@@ -196,7 +195,7 @@ Create `.louderrc.json` in project root or `~/.louderrc.json` for global config.
 | `sound` | boolean \| string | true | Sound type or `false` to disable |
 | `soundPath` | string | - | Custom sound file path (.aiff) |
 | `haptic` | boolean \| string | false | `true`, `"success"`, or `"error"` |
-| `delay` | number | 1500 | Delay in ms before feedback |
+| `delay` | number | 0 | Delay in ms before feedback |
 | `events` | object | - | Per-event overrides |
 
 ### Sound Types
@@ -214,10 +213,10 @@ Create `.louderrc.json` in project root or `~/.louderrc.json` for global config.
 
 ### Haptic Types
 
-| Type | Pattern | Use For |
-|------|---------|---------|
-| `success` | Triple tap (strong) | Task complete |
-| `error` | Triple tap (medium) | Errors |
+| Type | Intensity | Use For |
+|------|-----------|---------|
+| `success` | Strong | Task complete |
+| `error` | Strong | Errors |
 
 ### Config Formats
 
