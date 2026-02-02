@@ -13,7 +13,12 @@ func MTActuatorOpen(_ actuator: OpaquePointer) -> Int32
 func MTActuatorClose(_ actuator: OpaquePointer) -> Int32
 
 @_silgen_name("MTActuatorActuate")
-func MTActuatorActuate(_ actuator: OpaquePointer, _ actuationID: Int32, _ unknown1: UInt32, _ unknown2: Float, _ intensity: Float) -> Int32
+func MTActuatorActuate(_ actuator: OpaquePointer, _ actuationID: Int32, _ unknown1: UInt32, _ unknown2: Float, _ unknown3: Float) -> Int32
+
+// MARK: - Persistent Actuator State
+
+var persistentActuator: OpaquePointer? = nil
+var persistentDeviceID: UInt64 = 0
 
 // MARK: - IOKit Device Discovery
 
@@ -49,6 +54,18 @@ func findTrackpadDeviceID() -> UInt64? {
             continue
         }
         
+        var isBuiltIn = false
+        if let builtInRef = IORegistryEntryCreateCFProperty(
+            service,
+            "MT Built-In" as CFString,
+            kCFAllocatorDefault,
+            0
+        )?.takeRetainedValue() {
+            if CFGetTypeID(builtInRef) == CFBooleanGetTypeID() {
+                isBuiltIn = CFBooleanGetValue((builtInRef as! CFBoolean))
+            }
+        }
+        
         guard let deviceIDRef = IORegistryEntryCreateCFProperty(
             service,
             "Multitouch ID" as CFString,
@@ -65,37 +82,101 @@ func findTrackpadDeviceID() -> UInt64? {
         var deviceID: Int64 = 0
         CFNumberGetValue((deviceIDRef as! CFNumber), .sInt64Type, &deviceID)
         
-        return UInt64(bitPattern: deviceID)
+        let id = UInt64(bitPattern: deviceID)
+        
+        if isBuiltIn {
+            return id
+        }
+        
+        if persistentDeviceID == 0 {
+            persistentDeviceID = id
+        }
     }
     
-    return nil
+    return persistentDeviceID != 0 ? persistentDeviceID : nil
 }
 
 // MARK: - Haptic Feedback
 
-/// Actuation IDs: 1=very weak, 3=weak, 4=medium, 5=medium-strong, 6=strong, 15=very strong
-let ACTUATION_STRONG: Int32 = 15
-let ACTUATION_WEAK: Int32 = 6
+let ACTUATION_STRONG: Int32 = 6
+let ACTUATION_MEDIUM: Int32 = 4
+let ACTUATION_WEAK: Int32 = 3
 
-func triggerHaptic(actuationID: Int32, intensity: Float) -> Bool {
+func openActuator() -> Bool {
+    if persistentActuator != nil {
+        return true
+    }
+    
     guard let deviceID = findTrackpadDeviceID() else {
+        if ProcessInfo.processInfo.environment["DEBUG"] != nil {
+            fputs("DEBUG: No trackpad found\n", stderr)
+        }
         return false
     }
     
+    persistentDeviceID = deviceID
+    
     guard let actuator = MTActuatorCreateFromDeviceID(deviceID) else {
+        if ProcessInfo.processInfo.environment["DEBUG"] != nil {
+            fputs("DEBUG: Failed to create actuator for device \(deviceID)\n", stderr)
+        }
         return false
     }
     
     let openResult = MTActuatorOpen(actuator)
     if openResult != 0 {
-        _ = MTActuatorClose(actuator)
+        if ProcessInfo.processInfo.environment["DEBUG"] != nil {
+            fputs("DEBUG: MTActuatorOpen failed with \(openResult)\n", stderr)
+        }
         return false
     }
     
-    let clampedActuationID = max(0, min(15, actuationID))
+    persistentActuator = actuator
+    
+    if ProcessInfo.processInfo.environment["DEBUG"] != nil {
+        fputs("DEBUG: Actuator opened for device \(deviceID)\n", stderr)
+    }
+    
+    return true
+}
+
+func closeActuator() {
+    if let actuator = persistentActuator {
+        _ = MTActuatorClose(actuator)
+        persistentActuator = nil
+    }
+}
+
+func triggerHaptic(actuationID: Int32, intensity: Float) -> Bool {
+    if !openActuator() {
+        return false
+    }
+    
+    guard let actuator = persistentActuator else {
+        return false
+    }
+    
+    let clampedActuationID = max(1, min(16, actuationID))
     let clampedIntensity = max(0.0, min(2.0, intensity))
-    let actuateResult = MTActuatorActuate(actuator, clampedActuationID, 0, 0.0, clampedIntensity)
-    _ = MTActuatorClose(actuator)
+    
+    var actuateResult = MTActuatorActuate(actuator, clampedActuationID, 0, 0.0, clampedIntensity)
+    
+    if ProcessInfo.processInfo.environment["DEBUG"] != nil {
+        fputs("DEBUG: MTActuatorActuate(id=\(clampedActuationID), intensity=\(clampedIntensity)) = \(actuateResult)\n", stderr)
+    }
+    
+    if actuateResult != 0 {
+        if ProcessInfo.processInfo.environment["DEBUG"] != nil {
+            fputs("DEBUG: Retrying after close/reopen\n", stderr)
+        }
+        closeActuator()
+        if openActuator(), let retryActuator = persistentActuator {
+            actuateResult = MTActuatorActuate(retryActuator, clampedActuationID, 0, 0.0, clampedIntensity)
+            if ProcessInfo.processInfo.environment["DEBUG"] != nil {
+                fputs("DEBUG: Retry result = \(actuateResult)\n", stderr)
+            }
+        }
+    }
     
     return actuateResult == 0
 }

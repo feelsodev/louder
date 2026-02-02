@@ -58,8 +58,8 @@ async function playSound(soundType, soundPath) {
   } catch {}
 }
 
-const ACTUATION_STRONG = 15;
-const ACTUATION_WEAK = 6;
+const ACTUATION_STRONG = 6;
+const ACTUATION_WEAK = 3;
 
 const HAPTIC_ACTUATION_MAP = {
   success: ACTUATION_STRONG,
