@@ -181,6 +181,19 @@ func triggerHaptic(actuationID: Int32, intensity: Float) -> Bool {
     return actuateResult == 0
 }
 
+func triggerBurst(count: Int, actuationID: Int32, intensity: Float, delayMicroseconds: UInt32) -> Bool {
+    var anySuccess = false
+    for i in 0..<count {
+        if triggerHaptic(actuationID: actuationID, intensity: intensity) {
+            anySuccess = true
+        }
+        if i < count - 1 {
+            usleep(delayMicroseconds)
+        }
+    }
+    return anySuccess
+}
+
 // MARK: - Command Processing
 
 func processCommand(_ input: String) {
@@ -188,6 +201,22 @@ func processCommand(_ input: String) {
     guard !trimmed.isEmpty else { return }
     
     let parts = trimmed.split(separator: ",")
+    
+    // Burst mode: "burst,<count>,<actuationID>,<intensity>,<delayMicroseconds>"
+    if parts.first == "burst" {
+        let count = parts.count >= 2 ? Int(parts[1]) ?? 3 : 3
+        let actuationID = parts.count >= 3 ? Int32(parts[2]) ?? ACTUATION_STRONG : ACTUATION_STRONG
+        let intensity: Float = parts.count >= 4 ? (Float(parts[3]) ?? 2.0) : 2.0
+        let delayUs: UInt32 = parts.count >= 5 ? (UInt32(parts[4]) ?? 12000) : 12000
+        
+        let success = triggerBurst(count: count, actuationID: actuationID, intensity: intensity, delayMicroseconds: delayUs)
+        
+        if ProcessInfo.processInfo.environment["DEBUG"] != nil {
+            let status = success ? "OK" : "FAIL"
+            fputs("DEBUG: burst(count=\(count), id=\(actuationID), intensity=\(intensity), delay=\(delayUs)us) = \(status)\n", stderr)
+        }
+        return
+    }
     
     var actuationID: Int32 = ACTUATION_STRONG
     var intensity: Float = 2.0  // Maximum intensity by default
