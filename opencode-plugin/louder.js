@@ -95,7 +95,7 @@ async function playSound(type = "success") {
 async function playHaptic(intensity = 2.0) {
   const engine = await getHapticEngine()
   if (engine) {
-    engine.write(`6,${intensity}`)
+    engine.write(`burst,2,6,${intensity},12000`)
   }
 }
 

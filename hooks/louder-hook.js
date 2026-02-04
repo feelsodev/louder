@@ -178,7 +178,7 @@ async function playHaptic(hapticConfig) {
   const actuationID = HAPTIC_ACTUATION_MAP[parsed.type] || ACTUATION_STRONG;
   const rawIntensity = parsed.intensity;
   const intensity = Number.isFinite(rawIntensity) ? Math.max(0, Math.min(2, rawIntensity)) : 1.0;
-  const command = `${actuationID},${intensity}`;
+  const command = `burst,2,${actuationID},${intensity},12000`;
   
   const success = engine.write(command);
   if (!success) {
