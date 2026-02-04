@@ -1,16 +1,18 @@
 name: Publish
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "opencode-plugin/**"
+      - "hooks/**"
+      - "native/**"
+      - "package.json"
   workflow_dispatch:
-    inputs:
-      bump:
-        description: "Version bump type"
-        required: true
-        type: choice
-        options:
-          - patch
-          - minor
-          - major
+
+concurrency:
+  group: npm-publish
+  cancel-in-progress: false
 
 jobs:
   publish:
@@ -27,25 +29,40 @@ jobs:
         with:
           node-version: "20"
           registry-url: "https://registry.npmjs.org"
-          cache: "npm"
 
-      - run: npm ci
-      - run: npm run typecheck
-      - run: npm test -- --run
-      - run: npm run build
-
-      - name: Configure Git
+      - name: Verify package files exist
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          test -f opencode-plugin/louder.js || (echo "Missing opencode-plugin/louder.js" && exit 1)
+          test -f hooks/louder-hook.js || (echo "Missing hooks/louder-hook.js" && exit 1)
+          test -f native/HapticEngine || (echo "Missing native/HapticEngine" && exit 1)
 
-      - name: Bump version
-        run: npm version ${{ inputs.bump }} -m "chore: release v%s"
-
-      - name: Push changes
-        run: git push --follow-tags
+      - name: Check if version changed
+        id: version
+        run: |
+          LOCAL_VERSION=$(node -p "require('./package.json').version")
+          NPM_VERSION=$(npm view @feelso/louder version 2>/dev/null || echo "0.0.0")
+          echo "local=$LOCAL_VERSION" >> "$GITHUB_OUTPUT"
+          echo "npm=$NPM_VERSION" >> "$GITHUB_OUTPUT"
+          if [ "$LOCAL_VERSION" != "$NPM_VERSION" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Publish to npm
+        if: steps.version.outputs.changed == 'true'
         run: npm publish --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create git tag
+        if: steps.version.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${{ steps.version.outputs.local }}" -m "Release v${{ steps.version.outputs.local }}"
+          git push origin "v${{ steps.version.outputs.local }}"
+
+      - name: Skip publish (version unchanged)
+        if: steps.version.outputs.changed == 'false'
+        run: echo "Version ${{ steps.version.outputs.local }} already published. Bump version in package.json to trigger a new release."
