@@ -1,0 +1,48 @@
+{
+  "name": "@feelso/louder",
+  "version": "0.1.10",
+  "description": "Sound and haptic feedback when AI tasks complete. Your AI learned to shout.",
+  "type": "module",
+  "main": "./opencode-plugin/louder.js",
+  "exports": {
+    ".": "./opencode-plugin/louder.js",
+    "./opencode": "./opencode-plugin/louder.js"
+  },
+  "files": [
+    "opencode-plugin/",
+    "hooks/",
+    "native/HapticEngine",
+    "README.md"
+  ],
+  "scripts": {
+    "prepublishOnly": "echo 'Ready to publish'"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "opencode",
+    "notification",
+    "sound",
+    "haptic",
+    "ai",
+    "assistant",
+    "macos",
+    "productivity"
+  ],
+  "author": "feelso",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/feelsodev/louder.git"
+  },
+  "bugs": {
+    "url": "https://github.com/feelsodev/louder/issues"
+  },
+  "homepage": "https://github.com/feelsodev/louder#readme",
+  "engines": {
+    "node": ">=18"
+  },
+  "os": [
+    "darwin"
+  ]
+}
