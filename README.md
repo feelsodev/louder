@@ -88,11 +88,12 @@ Give your AI a task. When it finishes, you'll hear it. 🔊
 
 #### Claude Code
 
-Re-run the install command to get the latest version:
+```
+/plugin marketplace update louder
+/plugin update louder@louder
+```
 
-```
-/plugin install louder@louder
-```
+Then restart Claude Code.
 
 #### OpenCode (npm)
 
@@ -103,8 +104,6 @@ npm update @feelso/louder
 Then restart OpenCode.
 
 #### OpenCode (Local Plugin)
-
-Re-download the latest plugin file:
 
 ```bash
 curl -o ~/.config/opencode/plugins/louder.js \
