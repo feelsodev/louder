@@ -1,6 +1,6 @@
 {
   "name": "@feelso/louder",
-  "version": "0.1.10",
+  "version": "0.2.0",
   "description": "Sound and haptic feedback when AI tasks complete. Your AI learned to shout.",
   "type": "module",
   "main": "./opencode-plugin/louder.js",
