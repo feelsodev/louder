@@ -31,6 +31,9 @@ jobs:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
 
+      - name: Clear .npmrc token placeholder for OIDC
+        run: sed -i '/_authToken/d' "$NPM_CONFIG_USERCONFIG"
+
       - name: Verify package files exist
         run: |
           test -f opencode-plugin/louder.js || (echo "Missing opencode-plugin/louder.js" && exit 1)
