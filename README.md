@@ -84,6 +84,35 @@ Then restart OpenCode.
 
 Give your AI a task. When it finishes, you'll hear it. 🔊
 
+### Updating
+
+#### Claude Code
+
+Re-run the install command to get the latest version:
+
+```
+/plugin install louder@louder
+```
+
+#### OpenCode (npm)
+
+```bash
+npm update @feelso/louder
+```
+
+Then restart OpenCode.
+
+#### OpenCode (Local Plugin)
+
+Re-download the latest plugin file:
+
+```bash
+curl -o ~/.config/opencode/plugins/louder.js \
+  https://raw.githubusercontent.com/feelsodev/louder/main/opencode-plugin/louder.js
+```
+
+Then restart OpenCode.
+
 ### Troubleshooting
 
 - **No sound?** Check macOS System Settings > Sound
