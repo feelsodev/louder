@@ -110,6 +110,25 @@ omo install npm:@feelso/louder
 
 Restart OMO after installation.
 
+#### OpenAI Codex
+
+Install the command globally:
+
+```bash
+npm install -g @feelso/louder
+```
+
+Add the following to `~/.codex/config.toml`:
+
+```toml
+notify = ["louder-codex"]
+```
+
+Restart Codex after saving the configuration.
+
+> Codex currently emits `agent-turn-complete` through this interface. It does
+> not provide separate external notification events for errors or input requests.
+
 The same extension also works with other Pi-derived clients that support the
 standard default extension factory and `agent_start` / `agent_end` events.
 
@@ -144,6 +163,14 @@ curl -o ~/.config/opencode/plugins/louder.js \
 ```
 
 Then restart OpenCode.
+
+#### OpenAI Codex
+
+```bash
+npm update -g @feelso/louder
+```
+
+Then restart Codex.
 
 ### Troubleshooting
 
@@ -194,6 +221,18 @@ gjc plugin install @feelso/louder
 
 ```bash
 omo install npm:@feelso/louder
+```
+
+**OpenAI Codex:**
+
+```bash
+npm install -g @feelso/louder
+```
+
+Add to `~/.codex/config.toml`:
+
+```toml
+notify = ["louder-codex"]
 ```
 
 Then restart the agent (or use Pi's `/reload`).
@@ -343,6 +382,7 @@ Create `.louderrc.json` in project root or `~/.louderrc.json` for global config.
 | Pi / Pi-derived clients | error-shaped `agent_end` | error |
 | Gajae Code (GJC) | `agent_end` | success |
 | OMO / Senpi | `agent_end` | success |
+| OpenAI Codex | `agent-turn-complete` | success |
 
 ---
 

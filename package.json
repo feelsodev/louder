@@ -4,14 +4,19 @@
   "description": "Sound and haptic feedback when AI tasks complete. Your AI learned to shout.",
   "type": "module",
   "main": "./opencode-plugin/louder.js",
+  "bin": {
+    "louder-codex": "./codex/louder-notify.js"
+  },
   "exports": {
     ".": "./opencode-plugin/louder.js",
     "./opencode": "./opencode-plugin/louder.js",
     "./pi": "./pi-extension/louder.js",
     "./gjc": "./pi-extension/louder.js",
-    "./omo": "./pi-extension/louder.js"
+    "./omo": "./pi-extension/louder.js",
+    "./codex": "./codex/louder-notify.js"
   },
   "files": [
+    "codex/",
     "opencode-plugin/",
     "pi-extension/",
     "hooks/",
@@ -41,6 +46,7 @@
     "gjc",
     "omo",
     "senpi",
+    "codex",
     "notification",
     "sound",
     "haptic",
