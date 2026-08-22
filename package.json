@@ -8,7 +8,8 @@
     ".": "./opencode-plugin/louder.js",
     "./opencode": "./opencode-plugin/louder.js",
     "./pi": "./pi-extension/louder.js",
-    "./gjc": "./pi-extension/louder.js"
+    "./gjc": "./pi-extension/louder.js",
+    "./omo": "./pi-extension/louder.js"
   },
   "files": [
     "opencode-plugin/",

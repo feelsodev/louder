@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import { createLouderExtension } from "../pi-extension/louder.js";
@@ -58,4 +59,18 @@ test("maps pi errors and input requests without duplicate completion feedback", 
 
   // Then: Louder emits one error notification and suppresses the duplicate.
   assert.deepEqual(notifications, ["error"]);
+});
+
+test("exposes an explicit OMO package entry", async () => {
+  // Given: the published package metadata consumed by OMO's installer.
+  const packageJson = JSON.parse(
+    await readFile(new URL("../package.json", import.meta.url), "utf8"),
+  );
+
+  // When: a user requests the explicit OMO package export.
+  const omoExport = packageJson.exports?.["./omo"];
+
+  // Then: it resolves to the same adapter OMO discovers through pi.extensions.
+  assert.equal(omoExport, "./pi-extension/louder.js");
+  assert.deepEqual(packageJson.pi?.extensions, ["./pi-extension/louder.js"]);
 });
