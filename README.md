@@ -100,6 +100,16 @@ gjc plugin install @feelso/louder
 
 Restart GJC after installation.
 
+#### OMO / Senpi
+
+Install Louder with OMO's package installer:
+
+```bash
+omo install npm:@feelso/louder
+```
+
+Restart OMO after installation.
+
 The same extension also works with other Pi-derived clients that support the
 standard default extension factory and `agent_start` / `agent_end` events.
 
@@ -178,6 +188,12 @@ pi install npm:@feelso/louder
 
 ```bash
 gjc plugin install @feelso/louder
+```
+
+**OMO / Senpi:**
+
+```bash
+omo install npm:@feelso/louder
 ```
 
 Then restart the agent (or use Pi's `/reload`).
@@ -326,6 +342,7 @@ Create `.louderrc.json` in project root or `~/.louderrc.json` for global config.
 | Pi / Pi-derived clients | `agent_end` | success |
 | Pi / Pi-derived clients | error-shaped `agent_end` | error |
 | Gajae Code (GJC) | `agent_end` | success |
+| OMO / Senpi | `agent_end` | success |
 
 ---
 
