@@ -74,3 +74,26 @@ test("exposes an explicit OMO package entry", async () => {
   assert.equal(omoExport, "./pi-extension/louder.js");
   assert.deepEqual(packageJson.pi?.extensions, ["./pi-extension/louder.js"]);
 });
+
+test("releases the HapticEngine when a pi session shuts down", async () => {
+  // Given: a loaded extension with an observable haptic-engine disposer.
+  const handlers = new Map();
+  let disposeCount = 0;
+  const extension = createLouderExtension({
+    notify: async () => {},
+    dispose: async () => {
+      disposeCount += 1;
+    },
+  });
+  extension({
+    on(eventName, handler) {
+      handlers.set(eventName, handler);
+    },
+  });
+
+  // When: OMO emits the standard pi-family shutdown event.
+  await handlers.get("session_shutdown")({ type: "session_shutdown" });
+
+  // Then: the persistent native haptic child is released exactly once.
+  assert.equal(disposeCount, 1);
+});

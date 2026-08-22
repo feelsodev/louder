@@ -73,6 +73,17 @@ function resetHapticEngine() {
   enginePromise = null;
 }
 
+function disposeHapticEngine() {
+  const engine = hapticEngine;
+  resetHapticEngine();
+  if (!engine) return;
+
+  engine.stdin?.end();
+  if (!engine.killed) {
+    engine.kill();
+  }
+}
+
 function getHapticEnginePath() {
   return join(dirname(fileURLToPath(import.meta.url)), "..", "native", "HapticEngine");
 }
@@ -170,6 +181,7 @@ function getCompletionType(event) {
 
 export function createLouderExtension(options = {}) {
   const sendNotification = options.notify || notify;
+  const dispose = options.dispose || disposeHapticEngine;
 
   return function louderExtension(pi) {
     let awaitingCompletion = true;
@@ -182,6 +194,10 @@ export function createLouderExtension(options = {}) {
       if (!awaitingCompletion) return;
       awaitingCompletion = false;
       await sendNotification(getCompletionType(event));
+    });
+
+    pi.on("session_shutdown", async () => {
+      await dispose();
     });
   };
 }
