@@ -6,21 +6,38 @@
   "main": "./opencode-plugin/louder.js",
   "exports": {
     ".": "./opencode-plugin/louder.js",
-    "./opencode": "./opencode-plugin/louder.js"
+    "./opencode": "./opencode-plugin/louder.js",
+    "./pi": "./pi-extension/louder.js",
+    "./gjc": "./pi-extension/louder.js"
   },
   "files": [
     "opencode-plugin/",
+    "pi-extension/",
     "hooks/",
     "native/HapticEngine",
     "README.md"
   ],
+  "pi": {
+    "extensions": [
+      "./pi-extension/louder.js"
+    ]
+  },
+  "gjc": {
+    "extensions": [
+      "./pi-extension/louder.js"
+    ]
+  },
   "scripts": {
+    "test": "node --test",
     "prepublishOnly": "echo 'Ready to publish'"
   },
   "keywords": [
     "claude",
     "claude-code",
     "opencode",
+    "pi",
+    "gajae-code",
+    "gjc",
     "notification",
     "sound",
     "haptic",

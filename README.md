@@ -80,6 +80,29 @@ Then restart OpenCode.
 
 > **Note:** Local plugin only supports sound. For haptic feedback, use npm package.
 
+#### Pi
+
+Install Louder as a Pi package:
+
+```bash
+pi install npm:@feelso/louder
+```
+
+Restart Pi, or run `/reload` if Pi is already open.
+
+#### Gajae Code (GJC)
+
+Install Louder through GJC's npm plugin flow:
+
+```bash
+gjc plugin install @feelso/louder
+```
+
+Restart GJC after installation.
+
+The same extension also works with other Pi-derived clients that support the
+standard default extension factory and `agent_start` / `agent_end` events.
+
 ### Done!
 
 Give your AI a task. When it finishes, you'll hear it. 🔊
@@ -144,6 +167,20 @@ Then restart OpenCode.
 ```
 
 Then restart OpenCode.
+
+**Pi:**
+
+```bash
+pi install npm:@feelso/louder
+```
+
+**Gajae Code (GJC):**
+
+```bash
+gjc plugin install @feelso/louder
+```
+
+Then restart the agent (or use Pi's `/reload`).
 
 ### Ask User About Haptic Feedback
 
@@ -286,6 +323,9 @@ Create `.louderrc.json` in project root or `~/.louderrc.json` for global config.
 | OpenCode | `session.idle` | reminder |
 | OpenCode | `session.error` | error |
 | OpenCode | `session.progress` | progress |
+| Pi / Pi-derived clients | `agent_end` | success |
+| Pi / Pi-derived clients | error-shaped `agent_end` | error |
+| Gajae Code (GJC) | `agent_end` | success |
 
 ---
 
